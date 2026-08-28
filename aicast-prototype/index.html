@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>控制台 · AICast</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="dashboard">
+
+<main class="content">
+  <div class="crumb"><a href="index.html">工作台</a><span class="sep">/</span><span>控制台</span></div>
+
+  <!-- 顶部统计 -->
+  <div class="grid g4" id="stat-row">
+    <div class="card rv d1"><div class="stat"><span class="s-label">矩阵账号</span><span class="s-value mono" id="st-accounts">—</span><span class="s-note">机构套餐 · 上限 50</span></div></div>
+    <div class="card rv d2"><div class="stat"><span class="s-label">账号健康度预警</span><span class="s-value amber mono" id="st-warn">—</span><span class="s-note">临界 2 · 掉线 1</span></div></div>
+    <div class="card rv d3"><div class="stat"><span class="s-label">今日总播放</span><span class="s-value hot mono" id="st-views">—</span><span class="s-trend up">▲ 12% 较昨日</span></div></div>
+    <div class="card rv d4"><div class="stat"><span class="s-label">待审发布任务</span><span class="s-value mono" id="st-queue">—</span><span class="s-note">其中 1 条被健康度拦截</span></div></div>
+  </div>
+
+  <!-- 主布局 -->
+  <div class="grid g-layout block">
+    <!-- 左列 -->
+    <div>
+      <!-- 快速入口 -->
+      <div class="card rv d2">
+        <div class="card-head"><span class="card-title">快速上手</span><a href="decisions.html" class="small link-hot">打开决策面板 →</a></div>
+        <div class="grid g4" style="gap:14px;">
+          <a class="quick-step" href="generator.html"><span class="qs-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3l6 6"></path><path d="M13 7 5 15l4 4 8-8"></path><path d="m4 18 1 1 1-1 1 1"></path></svg></span><div class="qs-body"><b>内容生成</b><small>AI 批量产内容</small></div><span class="qs-arr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a>
+          <a class="quick-step" href="schedule.html"><span class="qs-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg></span><div class="qs-body"><b>预审调度</b><small>分时错峰发布</small></div><span class="qs-arr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a>
+          <a class="quick-step" href="analytics.html"><span class="qs-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><rect x="7" y="12" width="3" height="6"></rect><rect x="12" y="8" width="3" height="10"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></span><div class="qs-body"><b>数据回流</b><small>4D 归因反哺</small></div><span class="qs-arr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a>
+          <a class="quick-step" href="accounts.html"><span class="qs-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></span><div class="qs-body"><b>环境中心</b><small>独立隔离环境</small></div><span class="qs-arr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a>
+        </div>
+      </div>
+
+      <!-- 账号健康列表 -->
+      <div class="card rv d3" style="margin-top:18px;">
+        <div class="card-head">
+          <div><div class="card-title">矩阵账号健康度</div><div class="card-sub">按健康度排序 · 实时上报</div></div>
+          <a class="btn btn-ghost btn-sm" href="accounts.html">管理环境</a>
+        </div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>账号</th><th>平台</th><th>独立环境</th><th>健康度</th><th>粉丝</th><th>动作</th></tr></thead>
+          <tbody id="acct-list"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 右列 -->
+    <div>
+      <!-- 今日待发布 -->
+      <div class="card rv d4">
+        <div class="card-head"><span class="card-title">今日待发布</span><span class="tag amber">3 待发布</span></div>
+        <ul class="d-list" id="todo-list" style="list-style:none;"></ul>
+        <a class="btn btn-primary btn-block" style="margin-top:14px;" href="schedule.html">去调度</a>
+      </div>
+
+      <!-- 回灌标签 -->
+      <div class="card rv d5" style="margin-top:18px;">
+        <div class="card-head"><span class="card-title">回灌建议</span><span class="tag cyan">数据反哺</span></div>
+        <ul id="fb-tags" style="list-style:none;"></ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+(function () {
+  // 统计
+  api.fetchHealthOverview().then(function (ov) {
+    document.getElementById('st-accounts').textContent = ov.total;
+    document.getElementById('st-warn').textContent = (ov.critical + ov.offline) + ' 个';
+  });
+  api.fetchAccounts().then(function (list) {
+    var sum = list.reduce(function (s, a) { return s + parseInt(String(a.todayViews).replace('w','0000').replace(/[^\d]/g,'')) ; }, 0);
+    document.getElementById('st-views').textContent = (sum / 10000).toFixed(1) + 'w';
+    var rows = list.slice(0, 6).map(function (a) {
+      var st = a.status === 'healthy' ? '<span class="tag green">健康</span>' : a.status === 'critical' ? '<span class="tag amber">临界</span>' : '<span class="tag red">掉线</span>';
+      var bar = a.status === 'healthy' ? 'g' : a.status === 'critical' ? 'a' : 'r';
+      return '<tr><td><div class="cell-title"><span class="mini">' + a.short.charAt(0) + '</span><div><div>' + a.name + '</div></div></div></td>' +
+        '<td class="muted">' + a.platform + '</td><td class="mono faint">' + a.env + ' · ' + a.ip + '</td>' +
+        '<td style="min-width:150px"><div class="pbar ' + bar + '"><i style="width:' + a.health + '%"></i></div><div class="mono" style="font-size:11px;color:var(--text-faint);margin-top:5px">' + a.health + ' / 100</div></td>' +
+        '<td class="mono">' + a.fans + '</td><td>' + st + '</td></tr>';
+    }).join('');
+    document.getElementById('acct-list').innerHTML = rows;
+  });
+  // 待发布
+  api.fetchTasks().then(function (tasks) {
+    var li = tasks.map(function (t) {
+      var done = t.plan.filter(function (p) { return p.status === 'queued'; }).length;
+      return '<li style="padding:11px 0;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;gap:10px;align-items:center">' +
+        '<div><div style="font-weight:600">' + t.content + '</div><div class="small faint">已排 ' + done + '/' + t.plan.length + ' · ' + t.source + '</div></div>' +
+        (t.healthGate === '通过' ? '<span class="tag outline small">待发</span>' : '<span class="tag amber small">拦截</span>') + '</li>';
+    }).join('');
+    document.getElementById('todo-list').innerHTML = li || '<div class="empty">今日没有待发布任务</div>';
+    document.getElementById('st-queue').textContent = tasks.length;
+  });
+  // 回灌标签
+  api.fetchFeedbackTags().then(function (tags) {
+    document.getElementById('fb-tags').innerHTML = tags.map(function (t, i) {
+      return '<li style="padding:8px 0 8px 2px;border-left:2px solid var(--accent);padding-left:10px;margin-bottom:8px;color:var(--text);font-size:var(--t-1)">' + (i + 1) + '. ' + t + '</li>';
+    }).join('');
+  });
+})();
+</script>
+</body>
+</html>

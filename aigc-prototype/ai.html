@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 灵感生成 · AIGC 包材平台</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* 封面色块 tint-*（对应 mock 数据 cover 字段，风格与编辑器瓶体一致） */
+  .tint-caramel{background:radial-gradient(130% 130% at 30% 20%, #e6cbae, transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(84,58,38,.5), transparent 55%), #b98a72;}
+  .tint-teal{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.32), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.4), transparent 55%), #2F6E6E;}
+  .tint-terracotta{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.34), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.35), transparent 55%), #C9572F;}
+  .tint-gold{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.42), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.3), transparent 55%), #C88A2D;}
+  .tint-green{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.32), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.38), transparent 55%), #3a6b4f;}
+  .tint-graphite{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.34), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.45), transparent 55%), #707A86;}
+  .tint-rose{background:radial-gradient(130% 130% at 30% 20%, rgba(255,255,255,.36), transparent 46%), radial-gradient(90% 120% at 80% 42%, rgba(0,0,0,.32), transparent 55%), #a95a6d;}
+
+  /* 生成区 */
+  .gen-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);}
+  .gen-tips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;}
+  .gen-tips .lbl{font-size:12px;color:var(--text-sub);letter-spacing:.03em;}
+  .chip-anchor{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:1px solid var(--border);
+    background:var(--surface);font-size:12.5px;color:var(--text-sub);cursor:pointer;transition:.15s;}
+  .chip-anchor:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-tint);}
+  .gen-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;}
+
+  /* 骨架 */
+  .skel{background:linear-gradient(90deg, var(--surface2) 25%, #f6f1e8 40%, var(--surface2) 55%);
+    background-size:220% 100%;animation:shimmer 1.2s infinite linear;border-radius:var(--radius-sm);}
+  @keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+
+  /* 灵感卡 */
+  .idea-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px;}
+  @media (max-width:720px){.idea-grid{grid-template-columns:1fr;}}
+  .idea-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;
+    box-shadow:var(--shadow-sm);display:flex;flex-direction:column;animation:risefrom .35s ease;}
+  .idea-card .cover{height:150px;position:relative;border-bottom:1px solid var(--border);}
+  .idea-card .cover .badge{position:absolute;left:12px;bottom:10px;}
+  .idea-card .body{padding:14px 16px 16px;}
+  .idea-card h3{font-size:15px;margin-bottom:6px;}
+  .idea-card .note{font-size:12.5px;color:var(--text-sub);margin:6px 0 10px;}
+  .fl{display:flex;flex-wrap:wrap;gap:6px;}
+
+  /* 空态 */
+  .empty{text-align:center;padding:34px 12px;color:var(--text-sub);}
+  .empty b{color:var(--text);}
+  .empty .em-ic{width:52px;height:52px;margin:0 auto 12px;border-radius:16px;display:grid;place-items:center;
+    color:var(--primary);background:var(--primary-tint);}
+
+  /* callout */
+  .callout{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:var(--radius-md);
+    background:linear-gradient(90deg, rgba(201,87,47,.08), rgba(47,110,110,.06));
+    border:1px solid var(--border);margin:22px 0;}
+  .callout .ic{width:36px;height:36px;flex:none;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--primary),var(--accent2));}
+  .callout b{font-family:var(--font-display);font-size:14.5px;}
+  .callout p{margin:3px 0 0;color:var(--text-sub);font-size:13px;}
+
+  /* 灵感库 */
+  .lib-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:14px;}
+  @media (max-width:1024px){.lib-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:640px){.lib-grid{grid-template-columns:1fr;}}
+  .lib-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;}
+  .lib-card .cover{height:118px;position:relative;border-bottom:1px solid var(--border);}
+  .lib-card .cover .fl{position:absolute;left:10px;bottom:9px;}
+  .lib-card .body{padding:12px 14px;flex:1;display:flex;flex-direction:column;}
+  .lib-card .prompt{font-size:13px;font-weight:600;line-height:1.4;min-height:36px;}
+  .lib-card .tags{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 12px;}
+  .lib-card .ops{display:flex;gap:8px;margin-top:auto;border-top:1px solid var(--border);padding-top:10px;}
+  .op{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:600;
+    padding:7px 4px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-sub);cursor:pointer;transition:.15s;}
+  .op:hover{border-color:var(--primary);color:var(--primary);}
+  .op.solid{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .op.solid:hover{background:var(--primary-hover);}
+</style>
+</head>
+<body data-page="ai" data-title="AI 灵感">
+
+<main class="content">
+  <div class="page-head" data-reveal>
+    <div><h1>AI 灵感生成</h1>
+      <p>文生 / 图生造型与纹样 · <b>AI 只做视觉，最终落到真实模具可制造。</b></p></div>
+    <div class="spacer"></div>
+    <a class="btn ghost" href="editor.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex:none"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4 22V4a2 2 0 0 1 2-2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M12 14v4"/><path d="m8 16 4 2 4-2"/></svg>去编辑器微调</a>
+  </div>
+
+  <!-- 生成区 -->
+  <div class="card gen-panel" data-reveal style="animation-delay:.05s">
+    <div class="card-h"><div><div class="card-t">生成灵感</div>
+      <div class="card-sub">描述质感 / 色系 / 风格，AI 将自动映射到已入库的真实模具。</div></div></div>
+    <textarea id="prompt" rows="3" placeholder="例如：东方草本 · 青瓷釉面质感精华瓶，哑光低反射，局部细金线勾勒"></textarea>
+    <div class="gen-tips">
+      <span class="lbl">示例</span>
+      <button class="chip-anchor" data-eg="东方草本 · 青瓷釉面质感精华瓶，哑光低反射，细金线勾勒">青瓷釉面</button>
+      <button class="chip-anchor" data-eg="海洋凝润 · 波光流体渐变乳霜罐，镜面高光，珍珠母贝点缀">波光渐变</button>
+      <button class="chip-anchor" data-eg="鎏金纸醉 · 复古酒红香水喷雾，幻彩镭射，金色包边">复古鎏金</button>
+      <button class="chip-anchor" data-eg="极简蒙德里安 · 三色几何口红管，阳极氧化哑光">几何撞色</button>
+    </div>
+    <div class="gen-actions">
+      <button class="btn ghost" id="clearBtn">清空</button>
+      <button class="btn primary" id="genBtn" data-idle="生成灵感">生成灵感</button>
+    </div>
+  </div>
+
+  <!-- 生成结果 -->
+  <div id="resultWrap"></div>
+
+  <!-- 核心价值 callout -->
+  <div class="callout" data-reveal>
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="flex:none"><path d="M9.94 14.94 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94a2 2 0 0 0 1.44-1.44l1.58-6.13a.5.5 0 0 1 .96 0l1.58 6.13a2 2 0 0 0 1.44 1.44l6.13 1.58a.5.5 0 0 1 0 .96l-6.13 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0l-1.63-6.06Z"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg></div>
+    <div>
+      <b>AI 生成 → 自动 UV 映射到真实模具 → 可制造性核验</b>
+      <p>卡片外的装饰字体、B 端标识等文字未经工艺核验不会直接落刀。绿色徽标表示该方案已匹配可用的真实模具（如 A101），红色表示需人工改造。</p>
+    </div>
+  </div>
+
+  <!-- 我的灵感库 -->
+  <div class="page-head" style="margin-bottom:4px;margin-top:26px">
+    <div><h1 style="font-size:20px">我的灵感库</h1><p>历史 AI 生成与收藏的灵感，可一键带入编辑器。</p></div>
+    <div class="spacer"></div>
+  </div>
+  <div class="lib-grid" id="libGrid"><!-- JS 注入 --></div>
+</main>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+(function(){
+  var promptEl=document.getElementById('prompt');
+  var genBtn=document.getElementById('genBtn');
+  var resultWrap=document.getElementById('resultWrap');
+
+  /* 示例 chips 填入 */
+  [].forEach.call(document.querySelectorAll('.chip-anchor'),function(c){
+    c.addEventListener('click',function(){ promptEl.value=c.getAttribute('data-eg'); promptEl.focus(); });
+  });
+  document.getElementById('clearBtn').addEventListener('click',function(){ promptEl.value=''; });
+
+  // 可制造性徽标
+  function feaBadge(feasible){
+    return feasible
+      ? '<span class="tag green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="flex:none"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>可制造 · 已匹配真实模具 A101</span>'
+      : '<span class="tag red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="flex:none"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>需要改造</span>';
+  }
+  function renderIdeas(ideas, feasible){
+    var html='<div class="page-head" style="margin-top:22px"><div><h1 style="font-size:20px">生成结果</h1><p>同一提示词拆分为双方案，微侧重点不同。</p></div><div class="spacer"></div></div>'
+      +'<div class="idea-grid">';
+    ideas.forEach(function(it){
+      html+='<div class="idea-card">'
+        +'<div class="cover '+it.cover+'"><span class="badge">'+feaBadge(feasible)+'</span></div>'
+        +'<div class="body"><h3>'+it.name+'</h3>'
+        +'<div class="fl">'+(it.tags||[]).map(function(t){return '<span class="tag gray">'+t+'</span>';}).join('')+'</div>'
+        +'<div class="note">'+it.note+'</div>'
+        +'<div style="display:flex;gap:8px;margin-top:4px">'
+        +'<button class="op solid" data-apply>应用此灵感</button>'
+        +'<button class="op" data-regen>重生成</button>'
+        +'</div></div></div>';
+    });
+    html+='</div>';
+    resultWrap.innerHTML=html;
+    resultWrap.style.opacity=1;
+    [].forEach.call(resultWrap.querySelectorAll('[data-apply]'),function(b){
+      b.addEventListener('click',function(){ toast('已带入编辑器，等待微调'); location.href='editor.html'; });
+    });
+    [].forEach.call(resultWrap.querySelectorAll('[data-regen]'),function(b){
+      b.addEventListener('click',function(){ generate(); });
+    });
+  }
+  function skeleton(){
+    resultWrap.innerHTML='<div class="page-head" style="margin-top:22px"><div><h1 style="font-size:20px">生成结果</h1><p>AI 正在映射真实模具…</p></div></div>'
+      +'<div class="idea-grid">'
+      +'<div class="card" style="border-radius:var(--radius-lg);overflow:hidden;padding:0"><div class="skel" style="height:150px"></div><div style="padding:14px 16px;display:grid;gap:8px"><div class="skel" style="height:14px;width:60%"></div><div class="skel" style="height:12px;width:90%"></div><div class="skel" style="height:12px;width:70%"></div></div></div>'
+      +'<div class="card" style="border-radius:var(--radius-lg);overflow:hidden;padding:0"><div class="skel" style="height:150px"></div><div style="padding:14px 16px;display:grid;gap:8px"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:12px;width:85%"></div><div class="skel" style="height:12px;width:66%"></div></div></div>'
+      +'</div>';
+  }
+  function generate(){
+    var p=(promptEl.value||'').trim();
+    if(!p){ toast('请先输入提示词，或点一个示例填进去','err'); return; }
+    genBtn.disabled=true; genBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex:none;animation:rise .4s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>生成中…';
+    skeleton();
+    api.ideate({prompt:p}).then(function(r){
+      genBtn.disabled=false; genBtn.innerHTML='生成灵感';
+      if(!r.data || !r.data.ideas || !r.data.ideas.length){
+        resultWrap.innerHTML='<div class="card" style="margin-top:22px"><div class="empty"><div class="em-ic">&nbsp;</div><b>没有可用灵感</b><p style="margin:4px 0 0">换个提示词再试一次。</p></div></div>';
+        return;
+      }
+      renderIdeas(r.data.ideas, r.data.feasible);
+      toast('已生成 2 组灵感 · 可制造性已核验');
+    });
+  }
+  genBtn.addEventListener('click',generate);
+  promptEl.addEventListener('keydown',function(e){ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) generate(); });
+
+  /* 我的灵感库 */
+  var lib=document.getElementById('libGrid');
+  DB.aiIdeas.forEach(function(idea){
+    var card=document.createElement('div'); card.className='lib-card';
+    card.innerHTML='<div class="cover '+idea.cover+'"><span class="fl">'+feaBadge(idea.feasible)+'</span></div>'
+      +'<div class="body"><div class="prompt">'+idea.prompt+'</div>'
+      +'<div class="tags">'+(idea.tags||[]).map(function(t){return '<span class="tag gray">'+t+'</span>';}).join('')+'</div>'
+      +'<div class="ops">'
+      +'<button class="op solid" data-lib-apply>应用</button>'
+      +'<button class="op" data-lib-regen>重生成</button>'
+      +'<button class="op" data-lib-fav>收藏</button>'
+      +'</div></div>';
+    card.querySelector('[data-lib-apply]').addEventListener('click',function(){ toast('已应用灵感到真实模具 A101'); location.href='editor.html'; });
+    card.querySelector('[data-lib-regen]').addEventListener('click',function(){ promptEl.value=idea.prompt; toast('已回填提示词，正在重新生成'); });
+    card.querySelector('[data-lib-fav]').addEventListener('click',function(ev){ ev.currentTarget.classList.toggle('solid'); toast(ev.currentTarget.classList.contains('solid')?'已收藏':'已取消收藏'); });
+    lib.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>

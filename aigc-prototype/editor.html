@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 设计编辑器 · AIGC 包材平台</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .content.editor{max-width:none;padding:0 22px 22px;}
+  .ed-grid{display:grid;grid-template-columns:248px 1fr 300px;gap:16px;height:calc(100vh - 74px);}
+  .ed-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;}
+  .ed-tabs{display:flex;border-bottom:1px solid var(--border);}
+  .ed-tabs button{flex:1;border:none;background:none;padding:12px 6px;font-size:13px;font-weight:600;color:var(--text-sub);border-bottom:2px solid transparent;}
+  .ed-tabs button.active{color:var(--primary);border-bottom-color:var(--primary);}
+  .ed-panel{padding:14px;overflow:auto;}
+  .ed-panel h5{font-family:var(--font-body);font-size:11px;letter-spacing:.1em;color:var(--text-sub);margin:16px 0 9px;text-transform:uppercase;}
+  .item-row{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:.15s;}
+  .item-row:hover{background:var(--surface2);}
+  .item-row.active{border-color:var(--primary);background:var(--primary-tint);}
+  .item-row .icon{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:#fff;}
+  .item-row b{font-size:13px;} .item-row small{display:block;color:var(--text-sub);font-size:11.5px;}
+
+  /* 3D 视口 */
+  .ed-stage{position:relative;background:radial-gradient(120% 100% at 50% 30%,#6b7280 0%,#3a4250 55%,#232831 100%);border-radius:var(--radius-lg);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .stage-hud{position:absolute;top:14px;left:14px;display:flex;gap:8px;}
+  .stage-hud .pbtn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.06);color:#232831;display:grid;place-items:center;}
+  .stage-hud .pbtn.active{background:var(--primary);color:#fff;}
+  .stage-foot{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .palette{display:flex;gap:10px;padding:10px 14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+  .swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.85);box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .swatch.active{outline:2px solid var(--primary);outline-offset:2px;}
+  .proc-chip{display:flex;gap:8px;}
+  .proc-chip button{border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.18);color:#fff;font-size:12px;padding:6px 12px;border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+  .proc-chip button.active{background:var(--primary);border-color:var(--primary);}
+
+  /* CSS 3D 瓶 */
+  .bottle-scene{width:220px;height:300px;perspective:900px;}
+  .bottle{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .9s ease;}
+  .bottle.rotating{animation:spin 9s linear infinite;}
+  @keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+  .cap{position:absolute;left:50%;top:4px;width:64px;height:34px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#d9d5cc,#b8b3a6);border-radius:6px 6px 3px 3px;box-shadow:inset -16px 0 0 rgba(0,0,0,.12);}
+  .neck{position:absolute;left:50%;top:36px;width:34px;height:34px;transform:translateX(-50%);
+    background:var(--bc,#b98a72);box-shadow:inset -8px 0 0 rgba(0,0,0,.14);}
+  .body{position:absolute;left:50%;top:66px;width:150px;height:196px;transform:translateX(-50%);
+    background:radial-gradient(140% 120% at 30% 20%, rgba(255,255,255,.55), transparent 45%),
+               radial-gradient(90% 120% at 78% 40%, rgba(0,0,0,.22), transparent 55%),
+               var(--bc,#b98a72);
+    border-radius:56px 56px 38px 38px;
+    box-shadow:inset -22px 0 26px rgba(0,0,0,.16), 0 30px 60px rgba(0,0,0,.35);
+    transition:background 400ms;}
+  .body::after{content:"";position:absolute;left:12px;right:12px;top:10px;height:3px;border-radius:3px;
+    background:rgba(255,255,255,.5);filter:blur(1px);}
+  body[data-proc="磨砂"] .body{filter:saturate(.8);background-image:
+    radial-gradient(140% 120% at 30% 20%, rgba(255,255,255,.35), transparent 46%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3C/filter%3E%3Crect width='40' height='40' filter='url(%23p)' opacity='0.28'/%3E%3C/svg%3E"),
+    var(--bc,#b98a72);}
+  body[data-proc="烫金"] .gild{display:block;}
+  .gild{display:none;position:absolute;left:50%;top:112px;transform:translateX(-50%);width:108px;height:26px;border-radius:6px;
+    background:linear-gradient(180deg,#f6d58a,#e3ac3c 45%,#b5791d);filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));z-index:3;}
+  .gild::after{content:"";position:absolute;inset:3px 5px;border:1px solid rgba(255,255,255,.5);border-radius:4px;}
+  body[data-proc="幻彩"] .holog{display:block;}
+  .holog{display:none;position:absolute;inset:0;border-radius:inherit;mix-blend-mode:overlay;
+    background:conic-gradient(from 0deg, #ff6a6a,#ffd36a,#7af1c0,#6ab0ff,#d86aff,#ff6a6a);opacity:.55;animation:hue 6s linear infinite;z-index:2;}
+  @keyframes hue{to{transform:rotate(360deg)}}
+  .render-caption{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.75);font-size:12px;letter-spacing:.06em;display:flex;align-items:center;gap:6px;}
+  .render-caption .dot{width:7px;height:7px;border-radius:50%;background:#57c97c;}
+
+  /* 右侧报价 */
+  .ed-right h5{font-family:var(--font-body);font-size:11px;letter-spacing:.1em;color:var(--text-sub);margin:4px 0 10px;text-transform:uppercase;}
+  .quote-total{background:var(--primary-tint);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:12px;}
+  .quote-total .row{display:flex;justify-content:space-between;font-size:13px;margin:5px 0;}
+  .quote-total .big{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--border-strong);margin-top:9px;padding-top:10px;}
+  .quote-total .big b{font-family:var(--font-display);font-size:24px;color:var(--primary);}
+  .ql{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .ql small{color:var(--text-sub);display:block;}
+  .ed-cta{display:grid;gap:10px;margin-top:14px;}
+  @media (max-width:1100px){.ed-grid{grid-template-columns:200px 1fr;} .ed-col.r{display:none;} .ed-col:first-child,.ed-grid>.ed-stage{grid-column:auto;}}
+</style>
+</head>
+<body data-page="editor" data-title="3D 设计编辑器">
+
+<main class="content editor">
+  <div class="ed-grid">
+    <!-- 左侧模型/材质/工艺 -->
+    <aside class="ed-col">
+      <div class="ed-tabs"><button data-tab="model" class="active">模型</button><button data-tab="material">材质</button><button data-tab="process">工艺</button></div>
+      <div class="ed-panel" id="panel-model">
+        <h5>当前产品</h5>
+        <div class="item-row active"><div class="icon" style="background:#b98a72">瓶</div><div><b>磨砂渐变精华瓶 30ml</b><small>A101 · 广州玖鑫包材</small></div></div>
+        <h5>常用瓶型</h5>
+        <div class="item-row" data-sel="A101"><div class="icon" style="background:#b98a72">1</div><div><b>精华瓶</b><small>30ml PET</small></div></div>
+        <div class="item-row" data-sel="A102"><div class="icon" style="background:#2F6E6E">2</div><div><b>乳霜罐</b><small>50g 玻璃</small></div></div>
+        <div class="item-row" data-sel="A105"><div class="icon" style="background:#707A86">3</div><div><b>泵瓶</b><small>100ml PET</small></div></div>
+      </div>
+      <div class="ed-panel" id="panel-material" style="display:none">
+        <div class="item-row active"><b>PET · 磨砂</b><small>透光低反射</small></div>
+        <div class="item-row"><b>玻璃</b><small>高透高光</small></div>
+        <div class="item-row"><b>阳极氧化铝</b><small>哑光金属</small></div>
+        <div class="item-row"><b>塑料 PP</b><small>哑光奶白</small></div>
+      </div>
+      <div class="ed-panel" id="panel-process" style="display:none">
+        <div class="item-row" data-proc="烫金"><b>局部烫金</b><small>距瓶底 12mm</small></div>
+        <div class="item-row" data-proc="磨砂"><b>磨砂</b><small>全瓶雾面</small></div>
+        <div class="item-row" data-proc="幻彩"><b>幻彩镭射</b><small>流动虹彩</small></div>
+        <div class="item-row"><b>丝印</b><small>2 色 UV</small></div>
+      </div>
+    </aside>
+
+    <!-- 中间 3D 视口 -->
+    <div class="ed-stage" id="stage">
+      <div class="stage-hud">
+        <button class="pbtn" title="自动回转" id="spinToggle">⟳</button>
+        <button class="pbtn" title="重置视角">⌂</button>
+        <button class="pbtn" title="放大">+</button>
+      </div>
+      <div class="bottle-scene" id="scene">
+        <div class="bottle rotating" id="bottle">
+          <div class="cap"></div><div class="neck"></div><div class="body"><div class="holog"></div></div>
+          <div class="gild"></div>
+        </div>
+      </div>
+      <div class="render-caption"><span class="dot"></span>实时渲染 · PBR 材质 · 可旋转 360°</div>
+      <div class="stage-foot">
+        <div class="proc-chip">
+          <button data-proc="none">标准</button><button data-proc="烫金" class="active">烫金</button><button data-proc="磨砂">磨砂</button><button data-proc="幻彩">幻彩</button>
+        </div>
+        <div class="palette" id="palette" title="瓶体配色"></div>
+      </div>
+    </div>
+
+    <!-- 右侧 属性+报价 -->
+    <aside class="ed-col r">
+      <div class="ed-panel" style="height:100%">
+        <h5>渲染即报价 · BOM</h5>
+        <div class="quote-total">
+          <div class="row"><span>瓶型</span><b>A101 精华瓶</b></div>
+          <div class="row"><span>工艺</span><span class="tag primary">烫金</span></div>
+          <div class="row"><span>起订量</span><span>3,000 个</span></div>
+          <div class="big"><span>预估单价</span><b>¥2.14</b></div>
+          <div class="row" style="margin-top:4px"><span>MOQ 分摊 · 模具</span><span class="muted">¥0.00（现模）</span></div>
+        </div>
+        <div id="bomList"></div>
+        <div class="ed-cta">
+          <button class="btn primary" id="renderBtn">渲染快照 / 报价刷新</button>
+          <button class="btn ghost" id="genP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4 22V4a2 2 0 0 1 2-2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M12 14v4"/><path d="m8 16 4 2 4-2"/></svg>生成提案</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+(function(){
+  var COLORS = { '#b98a72':'陶土米', '#2F6E6E':'颜青', '#C9572F':'绯红', '#C88A2D':'鎏金', '#3a6b4f':'翡翠', '#a95a6d':'胭脂', '#707A86':'石墨' };
+  var pal = document.getElementById('palette'), cur=Object.keys(COLORS)[0];
+  Object.keys(COLORS).forEach(function(c){
+    var s=document.createElement('button'); s.className='swatch'+(c===cur?' active':''); s.style.background=c;
+    s.title=COLORS[c]; s.addEventListener('click',function(){ setColor(c,this); });
+    pal.appendChild(s);
+  });
+  function setColor(c,el){ cur=c; document.documentElement.style.setProperty('--bc',c);
+    pal.querySelectorAll('.swatch').forEach(function(x){x.classList.remove('active');}); if(el)el.classList.add('active'); toast('已应用瓶体配色：'+COLORS[c]); }
+
+  var spin=document.getElementById('spinToggle');
+  spin.addEventListener('click',function(){ var b=document.getElementById('bottle'); b.classList.toggle('rotating'); spin.classList.toggle('active'); });
+
+  /* 工艺切换 */
+  [].forEach.call(document.querySelectorAll('.proc-chip button, [data-proc]'),function(el){
+    el.addEventListener('click',function(){
+      var p=el.getAttribute('data-proc'); document.body.setAttribute('data-proc', p==='none'?'':p);
+      [].forEach.call(document.querySelectorAll('.proc-chip button'),function(x){x.classList.remove('active');});
+      if(el.classList) el.classList.add('active');
+      if(p!=='none') toast('工艺已应用：'+p);
+    });
+  });
+
+  /* 渲染报价 */
+  document.getElementById('renderBtn').addEventListener('click',function(){
+    api.renderSnapshot({bottle:'A101'}).then(function(r){
+      document.getElementById('genP').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>已刷新报价 · ¥2.14';
+      toast('渲染快照生成 · 报价已刷新');
+    });
+  });
+
+  /* BOM */
+  var bomEl=document.getElementById('bomList'); var sum=2.14;
+  DB.bom.forEach(function(l){
+    var d=document.createElement('div'); d.className='ql';
+    d.innerHTML='<div><b>'+l.name+'</b><small>'+l.spec+' · ×'+l.qty+' '+l.unit+'</small></div><span class="mono">¥'+l.estimate+'</span>';
+    bomEl.appendChild(d);
+  });
+
+  document.getElementById('genP').addEventListener('click',function(){ location.href='proposal.html'; });
+})();
+</script>
+</body>
+</html>

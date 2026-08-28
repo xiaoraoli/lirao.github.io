@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIGC 包材平台 · 资产库</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== 资产库专属样式 ===== */
+  .lib-filter{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;
+    background:rgba(255,255,255,.72);border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:16px 18px;margin-bottom:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+  .lib-filter .f{display:flex;flex-direction:column;gap:5px;}
+  .lib-filter .f label{font-size:11.5px;color:var(--text-sub);font-weight:600;letter-spacing:.02em;}
+  .lib-filter select{width:132px;height:38px;background:var(--surface);}
+  .lib-filter .f.kw{flex:1;min-width:190px;}
+  .lib-filter .f.kw input{background:var(--surface);}
+  .lib-result{margin:0 2px 14px;font-size:12.5px;color:var(--text-sub);}
+  .lib-result b{color:var(--primary);font-family:var(--font-mono);font-size:12.5px;}
+
+  .bottle-vis{height:158px;border-radius:var(--radius-md);display:flex;align-items:flex-end;justify-content:center;
+    padding-bottom:16px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(120px 60px at 50% 8%, rgba(255,255,255,.65), transparent 70%),
+      linear-gradient(180deg,var(--surface2), rgba(0,0,0,.03));
+  }
+  .bottle-vis::after{content:"";position:absolute;left:10px;right:10px;bottom:8px;height:8px;border-radius:50%;
+    background:var(--shadow-sm);filter:blur(3px);opacity:.5;}
+
+  .ck-book{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:999px;border:1px solid var(--border);
+    background:rgba(255,255,255,.9);display:grid;place-items:center;color:var(--text-sub);transition:.15s;z-index:2;}
+  .ck-book:hover{color:var(--primary);transform:scale(1.06);}
+  .ck-book.on{color:#fff;background:var(--primary);border-color:var(--primary);}
+
+  .at-card{display:flex;flex-direction:column;}
+  .at-card .ato{display:flex;flex-direction:column;gap:12px;flex:1;}
+  .at-actions{display:flex;gap:10px;margin-top:14px;}
+  .at-actions .btn{flex:1;justify-content:center;}
+
+  .lib-empty{text-align:center;padding:60px 20px;color:var(--text-sub);border:1px dashed var(--border-strong);
+    border-radius:var(--radius-lg);background:var(--surface);}
+  .lib-empty svg{opacity:.5;margin-bottom:14px;}
+  .lib-empty h3{font-size:18px;color:var(--text);margin-bottom:6px;}
+
+  .skel{height:100%;border-radius:var(--radius-lg);background:
+    linear-gradient(90deg,var(--surface2) 25%,#f7f2ea 40%,var(--surface2) 55%);
+    background-size:200% 100%;animation:sk 1.2s ease-in-out infinite;}
+  @keyframes sk{to{background-position:-200% 0;}}
+</style>
+</head>
+<body data-page="library" data-title="资产库">
+<main class="content">
+
+  <!-- 页面头 -->
+  <div class="page-head" data-reveal>
+    <div>
+      <h1>资产库</h1>
+      <p>结构化瓶型资产 · 覆盖精华瓶 / 乳霜罐 / 口红管等 8 大类，接入供应商数字化模具，图即图纸。</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" data-open-modal="mdlNew">&#43; 新增瓶型</button>
+  </div>
+
+  <!-- 筛选行 -->
+  <div class="lib-filter" data-reveal style="animation-delay:.05s">
+    <div class="f"><label>分类</label><select id="fCat"></select></div>
+    <div class="f"><label>材质</label><select id="fMat"></select></div>
+    <div class="f"><label>可加工工艺</label><select id="fProc"></select></div>
+    <div class="f"><label>供应商</label><select id="fSup"></select></div>
+    <div class="f kw"><label>关键字</label>
+      <div class="search" style="width:100%">
+        <span class="ic" id="kwIc"></span>
+        <input id="fKw" placeholder="搜索瓶型名称 / 供应商…" style="width:100%">
+      </div>
+    </div>
+  </div>
+
+  <!-- 汇总 -->
+  <div class="lib-result" data-reveal style="animation-delay:.08s">共 <b id="libTotal">–</b> 款匹配瓶型 <span class="muted" id="libNote"></span></div>
+
+  <!-- 加载骨架 / 网格 / 空态 -->
+  <div class="grid cols-3" id="libGrid" data-reveal style="animation-delay:.1s"></div>
+  <div class="lib-empty" id="libEmpty" style="display:none"></div>
+
+</main>
+
+<!-- 新增瓶型 模态框 -->
+<div class="modal-mask" id="mdlNew">
+  <div class="modal">
+    <div class="card-h" style="margin-bottom:18px">
+      <div>
+        <div class="card-t" style="font-size:19px">新增瓶型</div>
+        <div class="card-sub">录入基本信息后即可在资产库中检索，并接入 3D 编辑器做虚拟打样。</div>
+      </div>
+    </div>
+    <div class="field"><label>瓶型名称</label><input id="iName" type="text" placeholder="如：细高珍珠白精华瓶 30ml"></div>
+    <div class="field"><label>分类</label><select id="iCat"></select></div>
+    <div class="field"><label>材质</label><input id="iMat" type="text" placeholder="如：PET · 磨砂"></div>
+    <div style="display:flex;gap:12px">
+      <div class="field" style="flex:1"><label>参考单价 (¥)</label><input id="iPrice" type="number" step="0.01" placeholder="0.00"></div>
+      <div class="field" style="flex:1"><label>起订量 (个)</label><input id="iMoq" type="number" placeholder="3000"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn ghost" data-closemodal onclick="closeModal('mdlNew')">取消</button>
+      <button class="btn primary" id="iSave">保存并入库</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+(function(){
+  var ASSETS = window.DB.assets;
+
+  /* ---- 抽出去重选项 ---- */
+  function uniq(arr){ return arr.filter(function(v,i){return arr.indexOf(v)===i;}); }
+  var CATS   = uniq(ASSETS.map(function(a){return a.cat;}));
+  var MATS   = uniq(ASSETS.map(function(a){return a.material;}));
+  var PROCS  = uniq(ASSETS.reduce(function(p,a){return p.concat(a.processes||[]);},[]));
+  var SUPS   = uniq(ASSETS.map(function(a){return a.supplier;}));
+
+  var filterDom = { cat:'all', mat:'all', proc:'all', sup:'all', kw:'' };
+
+  function fillSelect(el, opts, withAll){
+    el.innerHTML = '';
+    if(withAll){ var o0=document.createElement('option'); o0.value='all'; o0.textContent='全部'; el.appendChild(o0); }
+    opts.forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; el.appendChild(opt); });
+  }
+
+  fillSelect(document.getElementById('fCat'),  CATS,  true);
+  fillSelect(document.getElementById('fMat'),  MATS,  true);
+  fillSelect(document.getElementById('fSup'),  SUPS,  true);
+  var psel = document.createElement('select');
+  fillSelect(psel, PROCS, true);
+  document.getElementById('fProc').innerHTML = psel.innerHTML;
+
+  var catSel=document.getElementById('iCat');
+  CATS.forEach(function(c){ var o=document.createElement('option'); o.textContent=c; o.value=c; catSel.appendChild(o); });
+
+  document.getElementById('kwIc').innerHTML = window.L('search', 15);
+
+  /* ---- 收藏集合（演示态） ---- */
+  var favs = {};
+
+  /* ---- 纯 CSS 画瓶：基础三维示意 ---- */
+  function bottleHTML(color){
+    return '<div style="flex:none;display:flex;flex-direction:column;align-items:center">'
+      + '<div style="width:30px;height:16px;background:'+color+';border-radius:4px 4px 0 0;box-shadow:inset 0 -3px 6px rgba(0,0,0,.18)"></div>'
+      + '<div style="width:30px;height:9px;background:'+color+';box-shadow:inset 0 0 6px rgba(0,0,0,.22)"></div>'
+      + '<div style="width:66px;height:100px;border-radius:9px 9px 16px 16px;position:relative;'
+      +   'background:linear-gradient(115deg,rgba(255,255,255,.32) 0%,'+color+' 40%,'+color+' 58%,rgba(0,0,0,.22) 100%);'
+      +   'box-shadow:inset -7px 0 10px rgba(0,0,0,.16), inset 5px 0 9px rgba(255,255,255,.35)"></div>'
+      + '</div>';
+  }
+
+  /* ---- 卡片渲染 ---- */
+  function cardHTML(a){
+    var techs = (a.processes||[]).map(function(t){
+      return '<span class="tag teal" style="font-size:11px">'+t+'</span>';
+    }).join('');
+    return '<div class="card at-card">'
+      + '<div class="bottle-vis">'+bottleHTML(a.color)+'</div>'
+      + '<button class="ck-book'+(favs[a.id]?' on':'')+'" data-fav="'+a.id+'" title="收藏">'+window.L('bookmark',16)+'</button>'
+      + '<div class="ato">'
+      +   '<div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">'
+      +     '<b style="font-family:var(--font-display);font-size:15.5px;line-height:1.25">'+a.name+'</b>'
+      +     '<span class="tag primary" style="flex:none">'+a.cat+'</span></div>'
+      +   '<div class="muted" style="font-size:12.5px">'+a.material+'</div></div>'
+      +   '<div style="display:flex;flex-wrap:wrap;gap:5px">'+techs+'</div>'
+      +   '<div class="muted" style="font-size:12.5px">'+a.supplier+'</div>'
+      +   '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);padding-top:12px">'
+      +     '<div><div class="muted" style="font-size:11px">起订量</div>'
+      +         '<div class="mono" style="font-size:12.5px">'+a.moq.toLocaleString()+' 个</div></div>'
+      +     '<div style="text-align:right"><div class="muted" style="font-size:11px">参考单价</div>'
+      +         '<div class="mono" style="font-size:13px;color:var(--primary)">¥'+a.price+'</div></div>'
+      +     '<div style="text-align:right"><div class="muted" style="font-size:11px">采用</div>'
+      +         '<div class="mono" style="font-size:12.5px;color:var(--success)">'+a.adopted+' 次</div></div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="at-actions"><a class="btn primary sm" href="editor.html">开始设计</a></div>'
+      + '</div>';
+  }
+
+  var grid=document.getElementById('libGrid');
+  var emptyEl=document.getElementById('libEmpty');
+  var totalEl=document.getElementById('libTotal');
+  var noteEl=document.getElementById('libNote');
+
+  function clientFilter(list){
+    if(filterDom.mat!=='all') list=list.filter(function(a){return a.material===filterDom.mat;});
+    if(filterDom.proc!=='all') list=list.filter(function(a){return (a.processes||[]).indexOf(filterDom.proc)>-1;});
+    if(filterDom.sup!=='all') list=list.filter(function(a){return a.supplier===filterDom.sup;});
+    return list;
+  }
+
+  var seq=0;
+  function load(){
+    var my=++seq;
+    // 骨架
+    grid.innerHTML='';
+    var sk=''; for(var i=0;i<6;i++){ sk+='<div class="skel" style="height:420px"></div>'; }
+    grid.innerHTML=sk;
+    emptyEl.style.display='none';
+    totalEl.textContent='…';
+
+    window.api.getAssets({ cat:filterDom.cat, kw:filterDom.kw }).then(function(r){
+      if(my!==seq) return; // 丢弃过期响应
+      var list=clientFilter(r.data.slice());
+      totalEl.textContent=list.length;
+      noteEl.textContent = (filterDom.cat!=='all'||filterDom.mat!=='all'||filterDom.proc!=='all'||filterDom.sup!=='all'||filterDom.kw)
+          ? '· 当前已启用筛选' : '';
+      if(!list.length){
+        grid.innerHTML='';
+        emptyEl.style.display='block';
+        emptyEl.innerHTML = window.L('package',40)
+          + '<h3>没有匹配的瓶型</h3><p>换个分类 / 材质或清除关键字试试，也可直接新增一款瓶型入库。</p>'
+          + '<button class="btn ghost" id="libReset" style="margin-top:8px">重置筛选</button>';
+        document.getElementById('libReset').addEventListener('click',function(){ resetFilters(); load(); });
+        return;
+      }
+      emptyEl.style.display='none';
+      grid.innerHTML=list.map(cardHTML).join('');
+    });
+  }
+
+  function resetFilters(){
+    ['fCat','fMat','fProc','fSup'].forEach(function(id){
+      var s=document.getElementById(id); s.value='all';
+    });
+    document.getElementById('fKw').value='';
+    filterDom={ cat:'all', mat:'all', proc:'all', sup:'all', kw:'' };
+  }
+
+  /* ---- 筛选事件 ---- */
+  ['fCat','fMat','fProc','fSup'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', function(e){
+      var v=e.target.value;
+      if(id==='fCat') filterDom.cat=v;
+      if(id==='fMat') filterDom.mat=v;
+      if(id==='fProc') filterDom.proc=v;
+      if(id==='fSup') filterDom.sup=v;
+      load();
+    });
+  });
+  var kwTimer;
+  document.getElementById('fKw').addEventListener('input', function(e){
+    clearTimeout(kwTimer);
+    kwTimer=setTimeout(function(){ filterDom.kw=e.target.value.trim(); load(); }, 280);
+  });
+
+  /* ---- 收藏（事件委托） ---- */
+  grid.addEventListener('click', function(e){
+    var b=e.target.closest('[data-fav]');
+    if(!b) return;
+    var id=b.dataset.fav;
+    if(favs[id]){ delete favs[id]; b.classList.remove('on'); window.toast('已取消收藏'); }
+    else{ favs[id]=1; b.classList.add('on'); window.toast('已收藏 · 可在编辑时快速调用'); }
+  });
+
+  /* ---- 新增瓶型入库 ---- */
+  document.getElementById('iSave').addEventListener('click', function(){
+    var name=document.getElementById('iName').value.trim();
+    var cat=document.getElementById('iCat').value;
+    if(!name){ window.toast('请填写瓶型名称','err'); return; }
+    window.closeModal('mdlNew');
+    window.toast('「'+name+'」已保存入库');
+    document.getElementById('iName').value='';
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

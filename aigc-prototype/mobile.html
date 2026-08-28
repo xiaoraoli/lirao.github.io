@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pack·AI 材料提案 · 手机预览</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== 舞台：居中手机壳 ===== */
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;}
+  .stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:34px 16px;background:radial-gradient(120% 160% at 50% 0%, #2a3338 0%, #131a1d 58%, #0d1214 100%);}
+  .stage-cap{color:#9fb0b4;font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;margin-bottom:16px;}
+  .stage-cap b{color:#e9eef0;font-weight:600;}
+
+  /* ===== 手机壳 ===== */
+  .phone{width:392px;background:#07090a;border-radius:54px;padding:13px;box-shadow:
+    0 40px 70px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.07);position:relative;}
+  .phone::after{content:"";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);
+    width:150px;height:4px;border-radius:4px;background:rgba(255,255,255,.28);}
+  .screen{position:relative;height:820px;border-radius:42px;overflow:auto;background:var(--bg);scrollbar-width:none;}
+  .screen::-webkit-scrollbar{display:none;}
+
+  /* 状态栏 */
+  .status{position:sticky;top:0;z-index:20;height:34px;display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 22px 0 26px;background:rgba(247,244,239,.92);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+  .status .time{font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.5px;}
+  .status .sig{display:flex;align-items:center;gap:7px;color:#232831;}
+  .status .sig .sig-bars{display:flex;align-items:flex-end;gap:2px;}
+  .status .sig .sig-bars i{width:3px;border-radius:1px;background:currentColor;}
+  .status .sig .sig-bars i:nth-child(1){height:4px;} .status .sig .sig-bars i:nth-child(2){height:7px;}
+  .status .sig .sig-bars i:nth-child(3){height:9px;} .status .sig .sig-bars i:nth-child(4){height:11px;background:#3a4148;}
+  .wifi{width:15px;height:11px;position:relative;}
+  .wifi::after{content:"";position:absolute;left:50%;bottom:0;width:4px;height:4px;background:currentColor;border-radius:50%;transform:translateX(-50%);}
+  .wifi::before{content:"";position:absolute;left:50%;bottom:1px;width:10px;height:10px;border-top:2px solid currentColor;border-radius:50%;transform:translateX(-50%);}
+  .batt{display:inline-flex;align-items:center;gap:2px;}
+  .batt-bar{width:20px;height:9px;border:1.5px solid #232831;border-radius:3px;position:relative;}
+  .batt-bar i{position:absolute;inset:1px;background:var(--success);border-radius:1px;width:70%;}
+  .batt-tab{width:2px;height:4px;background:#232831;border-radius:1px;}
+
+  /* ===== 提案页壳 ===== */
+  .prop{padding:0 0 100px;}
+  .bar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(255,255,255,.7);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);position:sticky;top:34px;z-index:15;}
+  .bar .bmark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--accent2));color:#fff;display:grid;place-items:center;flex:none;}
+  .bar .bt{flex:1;}
+  .bar .bt b{display:block;font-size:13.5px;line-height:1.15;}
+  .bar .bt span{font-size:10.5px;color:var(--text-sub);letter-spacing:.1em;font-family:var(--font-mono);}
+  .bar .close{width:32px;height:32px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-sub);display:grid;place-items:center;transition:.15s;}
+  .bar .close:active{background:var(--surface2);color:var(--text);transform:scale(.96);}
+
+  /* ===== 3D 瓶主视觉 ===== */
+  .hero{position:relative;margin:14px 16px 0;border-radius:20px;overflow:hidden;
+    background:radial-gradient(130% 170% at 82% -6%, #f8e9dc 0%, #efe1ce 46%, #e4d0b4 100%);
+    padding:38px 18px 30px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+  .hero .hero-tag{position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;gap:5px;
+    font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;color:var(--accent2);
+    background:rgba(255,255,255,.6);border:1px solid rgba(47,110,110,.2);padding:4px 9px;border-radius:999px;}
+  .hero .hero-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);}
+  .bottle-scene{perspective:900px;height:250px;display:flex;align-items:center;justify-content:center;}
+  .bottle{position:relative;width:150px;height:236px;transform-style:preserve-3d;opacity:0;}
+  .bottle.show{opacity:1;animation:popin .9s cubic-bezier(.2,.75,.35,1) forwards;transform-origin:50% 90%;}
+  @keyframes popin{
+    0%{opacity:0;transform:rotateY(-26deg) rotateX(4deg) translateY(18px) scale(.9);}
+    55%{opacity:1;transform:rotateY(10deg) rotateX(0) translateY(0) scale(1.03);}
+    100%{opacity:1;transform:rotateY(0) translateY(0) scale(1);}
+  }
+  .cap{position:absolute;left:50%;top:0;width:66px;height:32px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#4c8785,#2F6E6E 60%,#245a5a);border-radius:8px 8px 3px 3px;
+    box-shadow:inset -14px 0 0 rgba(0,0,0,.18), 0 4px 8px rgba(0,0,0,.22);}
+  .neck{position:absolute;left:50%;top:31px;width:36px;height:34px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#d8a27f,#cf946d);box-shadow:inset -9px 0 0 rgba(0,0,0,.16);}
+  .body{position:absolute;left:50%;top:62px;width:150px;height:174px;transform:translateX(-50%);
+    background:radial-gradient(140% 130% at 30% 18%, rgba(255,255,255,.6), transparent 46%),
+               radial-gradient(100% 130% at 80% 42%, rgba(0,0,0,.24), transparent 56%),
+               radial-gradient(90% 120% at 50% 120%, #c98a62, #b8784f);
+    border-radius:52px 52px 34px 34px;
+    box-shadow:inset -16px 0 22px rgba(0,0,0,.16), inset 8px 0 0 rgba(255,255,255,.14), 0 30px 46px rgba(120,80,45,.3);}
+  .body::after{content:"";position:absolute;left:14px;right:14px;top:12px;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,rgba(255,255,255,.62),rgba(255,255,255,.2));filter:blur(.5px);}
+  .gild{position:absolute;left:50%;top:128px;transform:translateX(-50%);width:106px;height:22px;border-radius:6px;z-index:2;
+    background:linear-gradient(180deg,#f1d48d,#dfab41 45%,#b57a1f);box-shadow:0 2px 5px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.4);}
+  .hero .hero-caption{margin-top:6px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-sub);font-family:var(--font-mono);letter-spacing:.05em;}
+  .hero .hero-caption .livedot{width:7px;height:7px;border-radius:50%;background:#4aaf7a;box-shadow:0 0 0 4px rgba(74,175,122,.15);}
+
+  /* 渲染中遮罩 */
+  .render-mask{position:absolute;inset:0;background:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;transition:opacity .5s ease;z-index:5;}
+  .render-mask.hide{opacity:0;pointer-events:none;}
+  .render-mask .spinner{width:38px;height:38px;border-radius:50%;border:3px solid rgba(201,87,47,.18);border-top-color:var(--primary);animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .render-mask .rt{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;color:var(--primary);}
+  .render-mask .rs{font-size:11px;color:var(--text-sub);}
+  .render-mask .pbar{width:130px;height:3px;border-radius:3px;background:rgba(201,87,47,.15);overflow:hidden;}
+  .render-mask .pbar i{display:block;height:100%;width:40%;background:var(--primary);border-radius:3px;animation:load 1.2s ease-in-out forwards;}
+  @keyframes load{0%{width:10%}100%{width:90%;}}
+
+  /* ===== 标题区 ===== */
+  .title-sec{padding:18px 20px 4px;}
+  .title-sec .cust{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub);margin-bottom:7px;}
+  .title-sec .cust::before{content:"";width:8px;height:8px;border-radius:3px;background:var(--accent2);}
+  .title-sec h2{font-family:var(--font-display);font-size:21px;font-weight:700;line-height:1.25;}
+  .title-sec .meta-row{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap;}
+  .chips-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--primary);
+    background:var(--primary-tint);padding:3px 10px;border-radius:999px;}
+  .title-sec .props{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub);}
+
+  /* ===== 工艺 / 材质信息卡 ===== */
+  .spec{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);
+    border-radius:var(--radius-lg);overflow:hidden;margin:16px 16px 0;box-shadow:var(--shadow-sm);}
+  .spec .cell{background:var(--surface);padding:13px 14px;}
+  .spec .cell .k{font-size:11px;color:var(--text-sub);letter-spacing:.03em;display:flex;align-items:center;gap:5px;}
+  .spec .cell .v{font-size:13.5px;font-weight:700;margin-top:3px;font-family:var(--font-display);}
+  .spec .cell .v.small{font-size:12.5px;}
+  .spec .cell .v.mono{font-family:var(--font-mono);color:var(--primary);}
+  .spec .ic{width:14px;height:14px;color:var(--text-sub);flex:none;}
+
+  .note-card{display:flex;gap:10px;align-items:flex-start;margin:16px 16px 0;padding:13px 14px;border-radius:var(--radius-md);
+    background:#EEF4F2;border:1px solid #DCE9E5;}
+  .note-card .ic{color:var(--accent2);flex:none;margin-top:1px;}
+  .note-card b{display:block;font-size:13px;color:var(--accent2);}
+  .note-card p{margin:2px 0 0;font-size:12px;color:#47706e;line-height:1.55;}
+
+  /* ===== 底部操作条（固定于壳内） ===== */
+  .cta{position:absolute;left:0;right:0;bottom:0;z-index:30;display:flex;gap:10px;padding:13px 16px 18px;
+    background:rgba(247,244,239,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);}
+  .cta .btn{flex:1;justify-content:center;gap:8px;padding:13px 12px;border-radius:14px;font-size:14px;border:none;
+    -webkit-tap-highlight-color:transparent;transition:transform .12s, filter .15s, box-shadow .15s;}
+  .cta .btn:active{transform:scale(.97);filter:brightness(.96);}
+  .btn.ghost2{background:var(--surface);border:1px solid var(--border);color:var(--text);font-weight:600;}
+  .btn.ghost2:active{background:var(--surface2);}
+  .btn.primary{background:var(--primary);color:#fff;}
+  .btn.primary:active{background:var(--primary-hover);}
+  .btn.loading{opacity:.7;pointer-events:none;}
+  .spinner-mini{width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite;}
+
+  /* ===== 页脚商务规范 ===== */
+  .disclaimer{margin:20px 16px 0;padding-top:14px;border-top:1px dashed var(--border-strong);text-align:center;}
+  .disclaimer .lead{font-size:11.5px;font-weight:700;color:var(--text-sub);letter-spacing:.05em;}
+  .disclaimer .more{font-size:10.5px;color:var(--text);opacity:.55;margin-top:3px;line-height:1.7;}
+  .disclaimer .brand{margin-top:12px;display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--text-sub);}
+  .disclaimer .brand .bmark{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,var(--primary),var(--accent2));display:grid;place-items:center;color:#fff;}
+
+  /* toast */
+  .toast-box{position:absolute;left:50%;top:auto;bottom:86px;transform:translateX(-50%) translateY(12px);z-index:60;
+    background:var(--text);color:#fff;padding:11px 16px;border-radius:12px;font-size:12.5px;box-shadow:var(--shadow-lg);
+    opacity:0;pointer-events:none;transition:all .25s ease;max-width:86%;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+  .toast-box.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast-box svg{flex:none;color:#57c97c;}
+
+  @media (max-width:440px){
+    .phone{width:100%;border-radius:34px;padding:8px;}
+    .screen{height:620px;border-radius:27px;}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="stage-cap">Pack&middot;AI · <b>销售 → 客户</b> 提案预览</div>
+  <div class="phone">
+    <div class="screen">
+      <!-- 状态栏 -->
+      <div class="status">
+        <span class="time">09:41</span>
+        <span class="sig">
+          <span class="sig-bars"><i></i><i></i><i></i><i></i></span>
+          <span class="wifi"></span>
+          <span class="batt"><span class="batt-bar"><i></i></span><span class="batt-tab"></span></span>
+        </span>
+      </div>
+
+      <!-- 提案页 -->
+      <div class="prop">
+        <div class="bar">
+          <div class="bmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg></div>
+          <div class="bt"><b>Pack·AI 材料提案</b><span>AI GENERATED PROPOSAL</span></div>
+          <a class="close" href="index.html" title="返回桌面工作台">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          </a>
+        </div>
+
+        <!-- 3D 主视觉 -->
+        <div class="hero">
+          <span class="hero-tag"><span class="dot"></span>AI 3D 渲染</span>
+          <div class="render-mask" id="renderMask">
+            <div class="spinner"></div>
+            <div class="rt">渲染中 · 拾取材质</div>
+            <div class="rs">正在烘焙瓶身光影 · PBR 实时反射</div>
+            <div class="pbar"><i></i></div>
+          </div>
+          <div class="bottle-scene">
+            <div class="bottle" id="bottle">
+              <div class="cap"></div><div class="neck"></div>
+              <div class="body"><div class="gild"></div></div>
+            </div>
+          </div>
+          <div class="hero-caption"><span class="livedot"></span>实时渲染 · 支持在线换工艺</div>
+        </div>
+
+        <!-- 标题 -->
+        <div class="title-sec">
+          <span class="cust">提案对象：<b id="customer">初雾生物</b></span>
+          <h2 id="title">「初雾」保湿精华瓶 30ml</h2>
+          <div class="meta-row">
+            <span class="chips-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M20 6 9 17l-5-5"/></svg>
+              已采纳 · 128 家使用
+            </span>
+            <span class="props"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>更新于 2026-08-25</span>
+          </div>
+        </div>
+
+        <!-- 工艺 / 材质 -->
+        <div class="spec">
+          <div class="cell">
+            <div class="k"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>材质</div>
+            <div class="v small" id="mat">PET · 磨砂</div>
+          </div>
+          <div class="cell">
+            <div class="k"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 14 2-4h4"/><path d="m9 14 2-4 6 3 4-5"/></svg>工艺</div>
+            <div class="v small" id="proc">烫金 · 丝印</div>
+          </div>
+          <div class="cell">
+            <div class="k"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>参考单价</div>
+            <div class="v mono" id="price">¥2.14 / 只</div>
+          </div>
+        </div>
+
+        <!-- 规范提示 -->
+        <div class="note-card">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+          <div><b>商务规范</b><p>本提案为 AI 生成示意，配色 / 工艺预览仅供效果参考，实际以供应商实物打样及报价为准。成交价与交付周期详见正式合同确认单。</p></div>
+        </div>
+
+        <!-- 业务辅助说明（销售场景文案） -->
+        <div class="note-card" style="border-color:var(--border);background:var(--surface)">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div><b>样品保障</b><p>确认打样后 3 个工作日内出样，样品免费寄回；量产订单享受模具分摊与梯度报价。</p></div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="disclaimer">
+          <div class="lead">本内容由 Pack·AI 自动生成</div>
+          <div class="more">依据演示数据生成提案 · 非实物样品 · 以实物打样为准<br>演示用途：展示 B2B 包材 H5 提案的客户可见形态</div>
+          <div class="brand">
+            <span class="bmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/></svg></span>
+            温润材艺编辑室 · AIGC 包材平台
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部固定操作条 -->
+      <div class="cta">
+        <button class="btn ghost2" id="btnTech">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M17 2v4a2 2 0 0 0 2 2h4"/><path d="M3 6a2 2 0 0 1 2-2h9l5 5"/><path d="M4 14c0 4 3 6.5 7 8"/><path d="M8 14c0 2.5 2 4 4 5"/><path d="M2 11h4l2 2"/><path d="M16 11h4l2 2"/></svg>
+          在线换工艺预览
+        </button>
+        <button class="btn primary" id="btnSample">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m12 11 4 4h-8l4-4z" transform="translate(0 2)"/></svg>
+          申请打样 / 询价
+        </button>
+      </div>
+
+      <!-- toast -->
+      <div class="toast-box" id="toastBox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        <span id="toastMsg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/mock.js"></script>
+<script>
+(function(){
+  function ttoast(msg){
+    var box=document.getElementById('toastBox');
+    document.getElementById('toastMsg').textContent=msg;
+    box.classList.add('show');
+    clearTimeout(ttoast._t);
+    ttoast._t=setTimeout(function(){box.classList.remove('show');},2400);
+  }
+
+  /* 渲染加载 → 淡入瓶体 */
+  var mask=document.getElementById('renderMask'), bottle=document.getElementById('bottle');
+  setTimeout(function(){ mask.classList.add('hide'); bottle.classList.add('show'); }, 1500);
+
+  /* 填充提案数据 */
+  var p = (window.DB && DB.proposals && DB.proposals[0]) || { title:'「初雾」保湿精华瓶 30ml', customer:'初雾生物', process:'烫金 · 丝印', price:'2.14' };
+  document.getElementById('title').textContent = p.title;
+  document.getElementById('customer').textContent = p.customer || '';
+  var parts=(p.process||'').split('·');
+  if(parts.length===2){ document.getElementById('proc').textContent=(parts[0].trim()+' · '+parts[1].trim()); }
+  document.getElementById('price').textContent = '¥'+p.price+' / 只';
+
+  /* 在线换工艺预览 */
+  var tech=document.getElementById('btnTech');
+  tech.addEventListener('click', function(){
+    tech.classList.add('loading');
+    ttoast('已请求变更，稍后为您刷新 3D 预览');
+    setTimeout(function(){
+      tech.classList.remove('loading');
+      document.getElementById('proc').textContent='磨砂 · 局部UV';
+      ttoast('工艺预览已更新：磨砂 · 局部UV');
+    }, 1400);
+  });
+
+  /* 申请打样 / 询价 */
+  var smp=document.getElementById('btnSample');
+  smp.addEventListener('click', function(){
+    smp.classList.add('loading');
+    smp.querySelector('svg').style.display='none';
+    var sp=document.createElement('span'); sp.className='spinner-mini'; smp.prepend(sp);
+    smp.lastChild.textContent=' 提交中…';
+    ttoast('正在提交打样申请…');
+    setTimeout(function(){
+      smp.classList.remove('loading');
+      smp.querySelector('svg').style.display='';
+      if(sp) sp.remove();
+      smp.lastChild.textContent=' 申请打样 / 询价';
+      ttoast('打样申请已提交，客服将于 1 个工作日内联系您');
+    }, 1600);
+  });
+})();
+</script>
+</body>
+</html>

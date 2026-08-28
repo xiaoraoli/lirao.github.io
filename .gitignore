@@ -1,0 +1,7 @@
+# WorkBuddy 私有数据，勿上传
+.workbuddy/
+
+# 系统与编辑器缓存
+.DS_Store
+Thumbs.db
+*.log

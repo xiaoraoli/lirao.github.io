@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1440, initial-scale=1.0" />
+<title>伍星御瓶 · 数智化协同中枢 | Mould Lifecycle OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============== App Shell (frozen, used by ALL pages) ============== -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E8B4A0"/>
+              <stop offset="100%" stop-color="#D4A574"/>
+            </linearGradient>
+          </defs>
+          <path d="M11 4h10l3 6v18a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10l3-6Z" stroke="url(#brandGrad)" stroke-width="1.6"/>
+          <path d="M8 10h16" stroke="url(#brandGrad)" stroke-width="1.6"/>
+          <path d="M13 16h6M13 20h6M13 24h4" stroke="url(#brandGrad)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">伍星御瓶</div>
+        <div class="brand-sub">数智化协同中枢</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-label">运营总览</div>
+        <a class="nav-item active" data-page="dashboard">
+          <i data-lucide="layout-dashboard"></i><span>数字大脑</span>
+          <span class="nav-badge">LIVE</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">模具协同 ⭐</div>
+        <a class="nav-item" data-page="mould-overview">
+          <i data-lucide="grid-3x3"></i><span>模具总览</span>
+        </a>
+        <a class="nav-item" data-page="mould-detail">
+          <i data-lucide="package"></i><span>模具档案</span>
+        </a>
+        <a class="nav-item" data-page="mould-order">
+          <i data-lucide="link-2"></i><span>订单×模具</span>
+        </a>
+        <a class="nav-item" data-page="mould-maintain">
+          <i data-lucide="wrench"></i><span>保养预警</span>
+        </a>
+        <a class="nav-item" data-page="mould-3d">
+          <i data-lucide="boxes"></i><span>3D 模仓</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">车间协同 · 二期</div>
+        <a class="nav-item" data-page="mes-schedule">
+          <i data-lucide="factory"></i><span>MES 排产看板</span>
+        </a>
+        <a class="nav-item" data-page="mes-pda">
+          <i data-lucide="scan-line"></i><span>工位 PDA 扫码</span>
+        </a>
+        <a class="nav-item" data-page="mes-iot">
+          <i data-lucide="activity"></i><span>IoT 实时数据</span>
+        </a>
+        <a class="nav-item" data-page="mes-issue">
+          <i data-lucide="siren"></i><span>异常派工</span>
+        </a>
+        <a class="nav-item" data-page="wms">
+          <i data-lucide="warehouse"></i><span>WMS 仓储</span>
+        </a>
+        <a class="nav-item" data-page="newplant">
+          <i data-lucide="truck"></i><span>新厂搬迁协同</span>
+          <span class="nav-tag hot">HOT</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">客户协同 · 三期</div>
+        <a class="nav-item" data-page="client-portal">
+          <i data-lucide="handshake"></i><span>客户 Portal</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+        <a class="nav-item" data-page="client-carbon">
+          <i data-lucide="leaf"></i><span>碳足迹报告</span>
+        </a>
+        <a class="nav-item" data-page="client-quality">
+          <i data-lucide="shield-check"></i><span>质量透明</span>
+        </a>
+        <a class="nav-item" data-page="client-audit">
+          <i data-lucide="video"></i><span>远程验厂</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">系统底座</div>
+        <a class="nav-item" data-page="erp-hub">
+          <i data-lucide="plug-zap"></i><span>ERP 对接中心</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">深化与智能化</div>
+        <a class="nav-item" data-page="client-order-detail">
+          <i data-lucide="git-fork"></i><span>订单穿透</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+        <a class="nav-item" data-page="mould-timeline">
+          <i data-lucide="calendar-range"></i><span>模具×订单时间线</span>
+        </a>
+        <a class="nav-item" data-page="aps-compare">
+          <i data-lucide="git-compare"></i><span>APS 试排对比</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+        <a class="nav-item" data-page="ai-quality">
+          <i data-lucide="brain"></i><span>AI 质量预测</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+        <a class="nav-item" data-page="digital-twin">
+          <i data-lucide="boxes"></i><span>数字孪生车间</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+        <a class="nav-item" data-page="supplier-portal">
+          <i data-lucide="truck"></i><span>供应商协同</span>
+          <span class="nav-tag new">NEW</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="role-card">
+        <div class="role-avatar">陈</div>
+        <div class="role-info">
+          <div class="role-name">陈总 · 运营总监</div>
+          <div class="role-meta">旧厂 · 模具协同组</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" title="折叠侧边栏" onclick="document.body.classList.toggle('collapsed')">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+        <div class="bread">
+          <span class="bread-root">运营总览</span>
+          <i data-lucide="chevron-right"></i>
+          <span class="bread-cur" id="breadCur">数字大脑</span>
+        </div>
+      </div>
+      <div class="topbar-center">
+        <!-- 厂区切换 -->
+        <div class="site-switch" id="siteSwitch">
+          <div class="site-opt active" data-site="old">
+            <i data-lucide="building-2"></i><span>旧厂 · 3 万 m²</span>
+          </div>
+          <div class="site-opt" data-site="new">
+            <i data-lucide="building"></i><span>新智造基地 · 7 万 m²</span>
+            <span class="site-tag">在建</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="topTime">--:--:--</div>
+        <button class="icon-btn" title="通知"><i data-lucide="bell"></i><span class="dot"></span></button>
+        <button class="icon-btn" title="搜索"><i data-lucide="search"></i></button>
+        <button class="icon-btn" title="全屏"><i data-lucide="maximize-2"></i></button>
+        <!-- ERP 切换 -->
+        <label class="erp-switch" title="演示未来自研可接管当前 ERP">
+          <span class="erp-label">对接 ERP</span>
+          <input type="checkbox" id="erpSwitch" checked />
+          <span class="erp-slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- 页面容器 -->
+    <div class="page-host" id="pageHost">
+
+      <!-- ============== Page 01: 数字大脑 ============== -->
+      <section class="page active" data-page="dashboard">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">数字大脑 <span class="page-title-en">Digital Brain</span></h1>
+            <p class="page-sub">实时呈现全厂 OEE、模具健康、新厂建设进度与客户订单交付 —— 总经理早会视角</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost" id="dashRefreshBtn"><i data-lucide="refresh-cw"></i>刷新</button>
+            <button class="btn ghost" id="dashExportBtn"><i data-lucide="download"></i>导出早会简报</button>
+            <button class="btn primary" id="dashInspectBtn"><i data-lucide="play"></i>开始巡检</button>
+          </div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">全厂 OEE</div>
+            <div class="kpi-value" style="--c:#E8B4A0">82.4<span class="kpi-unit">%</span></div>
+            <div class="kpi-trend up"><i data-lucide="trending-up"></i>较昨日 +2.1%</div>
+            <div class="kpi-spark" id="sparkOee"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">在产模具</div>
+            <div class="kpi-value" style="--c:#10B981">14<span class="kpi-unit">/ 20</span></div>
+            <div class="kpi-trend up"><i data-lucide="trending-up"></i>开机率 87.5%</div>
+            <div class="kpi-spark" id="sparkMould"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">今日交付订单</div>
+            <div class="kpi-value" style="--c:#3B82F6">12<span class="kpi-unit">单</span></div>
+            <div class="kpi-trend up"><i data-lucide="check-circle-2"></i>准时率 96%</div>
+            <div class="kpi-spark" id="sparkOrder"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">待处理异常</div>
+            <div class="kpi-value" style="--c:#EF4444">3<span class="kpi-unit">项</span></div>
+            <div class="kpi-trend down"><i data-lucide="alert-triangle"></i>已派工 2 / 3</div>
+            <div class="kpi-spark" id="sparkIssue"></div>
+          </div>
+        </div>
+
+        <!-- 4 屏联动 -->
+        <div class="dash-grid dashboard-grid">
+          <div class="dash-card span-2">
+            <div class="dash-head">
+              <div class="dash-title">① 全厂 OEE 实时看板</div>
+              <div class="dash-tabs">
+                <span class="dash-tab active">注塑车间</span>
+                <span class="dash-tab">吹塑车间</span>
+                <span class="dash-tab">丝印车间</span>
+              </div>
+            </div>
+            <div class="chart-box" id="chartOee"></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head">
+              <div class="dash-title">② 模具健康度全景</div>
+              <a class="dash-link" data-goto="mould-overview">查看详情 →</a>
+            </div>
+            <div class="mould-health">
+              <div class="health-ring">
+                <div class="health-num">87<span>%</span></div>
+                <div class="health-cap">综合健康度</div>
+              </div>
+              <div class="health-legend">
+                <div class="lg-row"><span class="lg-dot" style="background:#10B981"></span><span>健康</span><b>14</b></div>
+                <div class="lg-row"><span class="lg-dot" style="background:#F59E0B"></span><span>注意</span><b>4</b></div>
+                <div class="lg-row"><span class="lg-dot" style="background:#EF4444"></span><span>告警</span><b>2</b></div>
+                <div class="lg-row"><span class="lg-dot" style="background:#6B7280"></span><span>停用</span><b>0</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head">
+              <div class="dash-title">③ 新厂建设进度</div>
+              <span class="dash-pill" style="--c:#D4A574">在建 2025-2026</span>
+            </div>
+            <div class="build-progress">
+              <div class="build-line">
+                <div class="build-cap">土建工程</div>
+                <div class="build-bar"><div class="build-fill" style="width:100%;--c:#10B981"></div></div>
+                <div class="build-num">100%</div>
+              </div>
+              <div class="build-line">
+                <div class="build-cap">机电安装</div>
+                <div class="build-bar"><div class="build-fill" style="width:78%;--c:#3B82F6"></div></div>
+                <div class="build-num">78%</div>
+              </div>
+              <div class="build-line">
+                <div class="build-cap">设备进场</div>
+                <div class="build-bar"><div class="build-fill" style="width:42%;--c:#D4A574"></div></div>
+                <div class="build-num">42%</div>
+              </div>
+              <div class="build-line">
+                <div class="build-cap">数字大脑</div>
+                <div class="build-bar"><div class="build-fill" style="width:18%;--c:#E8B4A0"></div></div>
+                <div class="build-num">18%</div>
+              </div>
+              <div class="build-line">
+                <div class="build-cap">试生产</div>
+                <div class="build-bar"><div class="build-fill" style="width:0%;--c:#6B7280"></div></div>
+                <div class="build-num">0%</div>
+              </div>
+              <div class="build-foot">距试生产还有 <b style="color:#E8B4A0">96</b> 天</div>
+            </div>
+          </div>
+
+          <div class="dash-card span-2">
+            <div class="dash-head">
+              <div class="dash-title">④ 客户订单交付热力</div>
+              <div class="dash-legend-sm">
+                <span><i style="background:#10B981"></i>已交付</span>
+                <span><i style="background:#3B82F6"></i>生产中</span>
+                <span><i style="background:#F59E0B"></i>待开工</span>
+                <span><i style="background:#EF4444"></i>风险</span>
+              </div>
+            </div>
+            <div class="chart-box" id="chartClientHeat"></div>
+          </div>
+        </div>
+
+        <!-- 异常流水 -->
+        <div class="dash-card" style="margin-top:16px">
+          <div class="dash-head">
+            <div class="dash-title">实时异常流水</div>
+            <span class="dash-pill" style="--c:#EF4444">3 项待处理</span>
+          </div>
+          <div class="issue-list" id="issueList">
+            <!-- 动态生成 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 02: 模具总览 ============== -->
+      <section class="page" data-page="mould-overview">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">模具总览 <span class="page-title-en">Mould Overview</span></h1>
+            <p class="page-sub">4 象限泳道看板 · 一屏看清所有模具的生命周期阶段</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="filter"></i>筛选</button>
+            <button class="btn ghost"><i data-lucide="upload"></i>导入模具台账</button>
+            <button class="btn primary"><i data-lucide="plus"></i>新建模具档案</button>
+          </div>
+        </div>
+
+        <!-- 顶部统计条 -->
+        <div class="mould-stats">
+          <div class="ms-item"><div class="ms-num" style="--c:#3B82F6">3</div><div class="ms-cap">开发中</div></div>
+          <div class="ms-item"><div class="ms-num" style="--c:#10B981">14</div><div class="ms-cap">在产</div></div>
+          <div class="ms-item"><div class="ms-num" style="--c:#F59E0B">2</div><div class="ms-cap">待保养</div></div>
+          <div class="ms-item"><div class="ms-num" style="--c:#EF4444">1</div><div class="ms-cap">待报废</div></div>
+          <div class="ms-item"><div class="ms-num" style="--c:#6B7280">20</div><div class="ms-cap">模具总数</div></div>
+        </div>
+
+        <!-- 4 象限泳道 -->
+        <div class="quad-grid">
+          <div class="quad-col" data-state="dev">
+            <div class="quad-head" style="--c:#3B82F6">
+              <div><i data-lucide="hammer"></i> 开发中</div>
+              <span class="quad-count">3</span>
+            </div>
+            <div class="quad-body">
+              <!-- 卡片由 JS 注入 -->
+            </div>
+          </div>
+          <div class="quad-col" data-state="prod">
+            <div class="quad-head" style="--c:#10B981">
+              <div><i data-lucide="play-circle"></i> 在产</div>
+              <span class="quad-count">14</span>
+            </div>
+            <div class="quad-body"></div>
+          </div>
+          <div class="quad-col" data-state="maint">
+            <div class="quad-head" style="--c:#F59E0B">
+              <div><i data-lucide="wrench"></i> 待保养</div>
+              <span class="quad-count">2</span>
+            </div>
+            <div class="quad-body"></div>
+          </div>
+          <div class="quad-col" data-state="scrap">
+            <div class="quad-head" style="--c:#EF4444">
+              <div><i data-lucide="trash-2"></i> 待报废</div>
+              <span class="quad-count">1</span>
+            </div>
+            <div class="quad-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 03: 模具档案详情 ============== -->
+      <section class="page" data-page="mould-detail">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">模具档案 <span class="page-title-en">Mould Dossier</span></h1>
+            <p class="page-sub">一瓶一码 · 一模一档 · 完整生命周期追溯</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="printer"></i>打印档案</button>
+            <button class="btn ghost"><i data-lucide="edit-3"></i>编辑</button>
+            <button class="btn primary"><i data-lucide="qr-code"></i>瓶身赋码</button>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <!-- 左：基础信息 + 3D 瓶身 -->
+          <div class="detail-left">
+            <div class="card panel">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-title">PETG-A22 精华瓶</div>
+                  <div class="panel-sub">Mould ID · M-PETG-A22-V3 · 第 3 版 · 量产中</div>
+                </div>
+                <span class="status-pill ok">在产</span>
+              </div>
+              <div class="bottle-card">
+                <div class="bottle-vis">
+                  <div class="bottle-glow"></div>
+                  <div class="bottle-shape">
+                    <div class="bottle-cap"></div>
+                    <div class="bottle-neck"></div>
+                    <div class="bottle-body">
+                      <div class="bottle-brand">ESSENCE</div>
+                      <div class="bottle-meta">30ml · PETG</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bottle-info">
+                  <div class="bi-row"><span>客户</span><b>完美日记</b></div>
+                  <div class="bi-row"><span>产品系列</span><b>动物眼影精华</b></div>
+                  <div class="bi-row"><span>瓶型</span><b>圆柱磨砂 · 烫金</b></div>
+                  <div class="bi-row"><span>瓶重</span><b>28.5 g</b></div>
+                  <div class="bi-row"><span>容量</span><b>30 ml</b></div>
+                  <div class="bi-row"><span>材质</span><b>高透环保 PETG</b></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">版本演进</div><span class="panel-sub">3 个版本</span></div>
+              <div class="version-list">
+                <div class="ver-item current">
+                  <div class="ver-dot"></div>
+                  <div class="ver-body">
+                    <div class="ver-name">V3 · 当前量产版</div>
+                    <div class="ver-meta">2026-04-12 首件 · 累计模塑 12,500 次</div>
+                  </div>
+                </div>
+                <div class="ver-item">
+                  <div class="ver-dot"></div>
+                  <div class="ver-body">
+                    <div class="ver-name">V2 · 修改颈口 R 角</div>
+                    <div class="ver-meta">2025-09-03 ~ 2026-04-11 · 累计 41,200 次</div>
+                  </div>
+                </div>
+                <div class="ver-item">
+                  <div class="ver-dot"></div>
+                  <div class="ver-body">
+                    <div class="ver-name">V1 · 初版量产</div>
+                    <div class="ver-meta">2024-12-18 ~ 2025-09-02 · 累计 38,400 次</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右：寿命/位置/订单/保养 -->
+          <div class="detail-right">
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">模具寿命</div></div>
+              <div class="life-wrap">
+                <div class="life-ring">
+                  <svg viewBox="0 0 120 120" width="160" height="160">
+                    <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.08)" stroke-width="10" fill="none"/>
+                    <circle cx="60" cy="60" r="50" stroke="url(#lifeGrad)" stroke-width="10" fill="none"
+                            stroke-dasharray="314" stroke-dashoffset="236" stroke-linecap="round"
+                            transform="rotate(-90 60 60)"/>
+                    <defs>
+                      <linearGradient id="lifeGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#E8B4A0"/>
+                        <stop offset="100%" stop-color="#D4A574"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="life-num">
+                    <div class="life-cur">12,500</div>
+                    <div class="life-tot">/ 50,000 次</div>
+                  </div>
+                </div>
+                <div class="life-info">
+                  <div class="li-row"><span>剩余可用</span><b style="color:#10B981">37,500 次</b></div>
+                  <div class="li-row"><span>日均消耗</span><b>420 次</b></div>
+                  <div class="li-row"><span>预计寿命到期</span><b>2026-11-08</b></div>
+                  <div class="li-row"><span>下次保养</span><b style="color:#F59E0B">2,500 次后</b></div>
+                </div>
+              </div>
+              <div class="chart-box small" id="chartLife"></div>
+            </div>
+
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">实时位置</div><span class="panel-sub">注塑车间 · 3 号机台</span></div>
+              <div class="loc-card">
+                <div class="loc-pin"></div>
+                <div class="loc-grid">
+                  <div class="loc-item"><i data-lucide="map-pin"></i>车间 A · 注塑 3#</div>
+                  <div class="loc-item"><i data-lucide="user-check"></i>操作员 · 李工</div>
+                  <div class="loc-item"><i data-lucide="thermometer"></i>模温 78℃</div>
+                  <div class="loc-item"><i data-lucide="activity"></i>周期 18.2s</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">当前绑定订单</div><a class="dash-link" data-goto="mould-order">订单追踪 →</a></div>
+              <div class="bind-order">
+                <div class="bo-top">
+                  <span class="bo-no">SO-20260825-0188</span>
+                  <span class="bo-client">完美日记</span>
+                </div>
+                <div class="bo-prod">动物眼影精华瓶 · 30ml · 烫金 · 8 万只</div>
+                <div class="bo-bar">
+                  <div class="bo-bar-fill" style="width:64%"></div>
+                </div>
+                <div class="bo-foot">
+                  <span>已生产 51,200 / 80,000</span>
+                  <span>交期 2026-09-05</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 04: 订单×模具 ============== -->
+      <section class="page" data-page="mould-order">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">订单 × 模具绑定 <span class="page-title-en">Order-Mould Linkage</span></h1>
+            <p class="page-sub">输入订单号反查使用的模具链路 · 一瓶一码全链路追溯</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="history"></i>查询历史</button>
+            <button class="btn primary"><i data-lucide="search"></i>深度追溯</button>
+          </div>
+        </div>
+
+        <!-- 查询区 -->
+        <div class="query-card">
+          <div class="query-row">
+            <div class="q-field grow">
+              <label>订单号</label>
+              <input type="text" value="SO-20260825-0188" />
+            </div>
+            <div class="q-field">
+              <label>客户</label>
+              <select><option>完美日记</option><option>珀莱雅</option><option>毛戈平</option><option>花西子</option><option>阿道夫</option></select>
+            </div>
+            <button class="btn primary big"><i data-lucide="search"></i>查询追溯</button>
+          </div>
+          <div class="query-quick">
+            快速示例：
+            <a class="chip">SO-20260825-0188 · 完美日记精华瓶</a>
+            <a class="chip">SO-20260824-0201 · 珀莱雅乳液瓶</a>
+            <a class="chip">SO-20260823-0156 · 毛戈平膏霜瓶</a>
+            <a class="chip">SO-20260822-0099 · 花西子卸妆油瓶</a>
+          </div>
+        </div>
+
+        <!-- 追溯树 -->
+        <div class="trace-card">
+          <div class="trace-title">全链路追溯树 <span class="trace-sub">正反向追溯 · 一键穿透</span></div>
+          <div class="trace-tree">
+
+            <div class="trace-row two" style="max-width:none;margin-bottom:8px">
+              <div class="trace-node root">
+                <div class="tn-icon"><i data-lucide="file-text"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">销售订单 SO-20260825-0188</div>
+                  <div class="tn-meta">完美日记 · 动物眼影精华瓶 · 8 万只 · 交期 2026-09-05</div>
+                </div>
+                <span class="tn-tag ok">生产中</span>
+              </div>
+              <div class="trace-node level-1">
+                <div class="tn-icon"><i data-lucide="package"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">生产工单 MO-20260825-0188</div>
+                  <div class="tn-meta">注塑车间 · 3 号机台 · 计划 6 天 · 进度 64%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="trace-arrow"></div>
+
+            <div class="trace-row">
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="hammer"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">模具 PETG-A22-V3</div>
+                  <div class="tn-meta">M-PETG-A22-V3 · 寿命 12,500 / 50,000</div>
+                </div>
+                <span class="tn-tag ok">健康</span>
+              </div>
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="wrench"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">工艺路线 PETG-A22-ROUTE</div>
+                  <div class="tn-meta">注塑 → 冷却 → 烫金 → 丝印 → 装配</div>
+                </div>
+                <span class="tn-tag">5 工序</span>
+              </div>
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="user"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">操作员 · 李工</div>
+                  <div class="tn-meta">3 号注塑机 · 高级技师</div>
+                </div>
+                <span class="tn-tag">在岗</span>
+              </div>
+            </div>
+
+            <div class="trace-arrow"></div>
+
+            <div class="trace-row">
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="droplet"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">原料 PETG-2012-08-B1</div>
+                  <div class="tn-meta">批次 · 2,400 kg · 供应商 SK Chemicals</div>
+                </div>
+                <span class="tn-tag ok">合格</span>
+              </div>
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="palette"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">色母 · 玫瑰金-2026-08</div>
+                  <div class="tn-meta">批次 · 80 kg · 供应商 巴斯夫</div>
+                </div>
+                <span class="tn-tag ok">合格</span>
+              </div>
+            </div>
+
+            <div class="trace-arrow"></div>
+
+            <div class="trace-row">
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="check-circle-2"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">首件 IQC · 2026-08-25 09:12</div>
+                  <div class="tn-meta">外观 OK · 尺寸 ±0.05mm · 烫金牢固度 5B</div>
+                </div>
+                <span class="tn-tag ok">通过</span>
+              </div>
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="shield-check"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">过程 PQC · 12 次抽检</div>
+                  <div class="tn-meta">不良率 0.32% · 趋势稳定</div>
+                </div>
+                <span class="tn-tag ok">通过</span>
+              </div>
+              <div class="trace-node level-2">
+                <div class="tn-icon"><i data-lucide="leaf"></i></div>
+                <div class="tn-body">
+                  <div class="tn-title">碳足迹 · 0.42 kgCO₂e/只</div>
+                  <div class="tn-meta">优于行业均值 18%</div>
+                </div>
+                <span class="tn-tag ok">领先</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 05: 保养预警 ============== -->
+      <section class="page" data-page="mould-maintain">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">保养预警 <span class="page-title-en">Maintenance & Forecast</span></h1>
+            <p class="page-sub">寿命倒计时 · 保养计划日历 · 一键派单</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="calendar"></i>月度计划</button>
+            <button class="btn primary"><i data-lucide="plus"></i>新建保养任务</button>
+          </div>
+        </div>
+
+        <!-- 预警条 -->
+        <div class="alert-row">
+          <div class="alert-card" style="--c:#EF4444">
+            <div class="alert-icon"><i data-lucide="alert-octagon"></i></div>
+            <div class="alert-body">
+              <div class="alert-num">2</div>
+              <div class="alert-cap">寿命告警（剩 &lt; 5%）</div>
+            </div>
+          </div>
+          <div class="alert-card" style="--c:#F59E0B">
+            <div class="alert-icon"><i data-lucide="alert-triangle"></i></div>
+            <div class="alert-body">
+              <div class="alert-num">4</div>
+              <div class="alert-cap">待保养（剩 &lt; 15%）</div>
+            </div>
+          </div>
+          <div class="alert-card" style="--c:#3B82F6">
+            <div class="alert-icon"><i data-lucide="clock"></i></div>
+            <div class="alert-body">
+              <div class="alert-num">3</div>
+              <div class="alert-cap">本周保养计划</div>
+            </div>
+          </div>
+          <div class="alert-card" style="--c:#10B981">
+            <div class="alert-icon"><i data-lucide="check-check"></i></div>
+            <div class="alert-body">
+              <div class="alert-num">11</div>
+              <div class="alert-cap">健康模具</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 寿命倒计时表 -->
+        <div class="card panel">
+          <div class="panel-head"><div class="panel-title">寿命倒计时排行 <span class="panel-sub">按剩余可用次数升序</span></div></div>
+          <div class="life-table" id="lifeTable">
+            <!-- JS 注入 -->
+          </div>
+        </div>
+
+        <!-- 保养日历 -->
+        <div class="card panel">
+          <div class="panel-head">
+            <div class="panel-title">本月保养日历 <span class="panel-sub">2026 年 8 月</span></div>
+            <div class="cal-legend">
+              <span><i style="background:#3B82F6"></i>计划保养</span>
+              <span><i style="background:#F59E0B"></i>临期保养</span>
+              <span><i style="background:#10B981"></i>已完成</span>
+            </div>
+          </div>
+          <div class="cal" id="calendar">
+            <!-- JS 注入 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 06: 3D 模仓 ============== -->
+      <section class="page" data-page="mould-3d">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">3D 模仓可视化 <span class="page-title-en">3D Mould Warehouse</span></h1>
+            <p class="page-sub">实时呈现模位占用、AGV 调度与模具流转</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="camera"></i>截图</button>
+            <button class="btn ghost"><i data-lucide="rotate-cw"></i>重置视角</button>
+            <button class="btn primary"><i data-lucide="play"></i>AGV 任务演练</button>
+          </div>
+        </div>
+
+        <div class="three-grid">
+          <div class="card panel" style="padding:0;overflow:hidden">
+            <div id="threeBox" style="width:100%;height:640px;background:linear-gradient(180deg,#0B1220 0%,#0F172A 100%)"></div>
+          </div>
+          <div class="three-side">
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">模位状态</div></div>
+              <div class="slot-stat">
+                <div class="ss-row"><span class="lg-dot" style="background:#10B981"></span><span>空闲</span><b>62</b></div>
+                <div class="ss-row"><span class="lg-dot" style="background:#3B82F6"></span><span>占用</span><b>14</b></div>
+                <div class="ss-row"><span class="lg-dot" style="background:#F59E0B"></span><span>待保养</span><b>2</b></div>
+                <div class="ss-row"><span class="lg-dot" style="background:#EF4444"></span><span>告警</span><b>2</b></div>
+              </div>
+            </div>
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">AGV 任务</div><span class="panel-sub">在线 3 台</span></div>
+              <div class="agv-list" id="agvList">
+                <!-- JS 注入 -->
+              </div>
+            </div>
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">快捷操作</div></div>
+              <div class="quick-ops">
+                <button class="qo"><i data-lucide="search"></i>查模具</button>
+                <button class="qo"><i data-lucide="move-3d"></i>调拨模位</button>
+                <button class="qo"><i data-lucide="clipboard-list"></i>盘点</button>
+                <button class="qo"><i data-lucide="alert-triangle"></i>异常上报</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 07: MES 排产看板 ============== -->
+      <section class="page" data-page="mes-schedule">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">MES 排产看板 <span class="page-title-en">Production Schedule</span></h1>
+            <p class="page-sub">15 台机台 × 24 小时甘特排产 · 注塑/吹塑/丝印/装配全车间协同</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="filter"></i>筛选车间</button>
+            <button class="btn ghost"><i data-lucide="download"></i>导出排产</button>
+            <button class="btn primary"><i data-lucide="zap"></i>一键重排</button>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-label">今日计划工单</div><div class="kpi-value" style="--c:#3B82F6">28<span class="kpi-unit">单</span></div><div class="kpi-trend up"><i data-lucide="check-circle-2"></i>已完成 14 / 进行 11</div></div>
+          <div class="kpi-card"><div class="kpi-label">车间综合 OEE</div><div class="kpi-value" style="--c:#10B981">82.4<span class="kpi-unit">%</span></div><div class="kpi-trend up"><i data-lucide="trending-up"></i>较昨日 +2.1%</div></div>
+          <div class="kpi-card"><div class="kpi-label">换模次数</div><div class="kpi-value" style="--c:#F59E0B">6<span class="kpi-unit">次</span></div><div class="kpi-trend"><i data-lucide="clock"></i>累计 132 分钟</div></div>
+          <div class="kpi-card"><div class="kpi-label">明日预计</div><div class="kpi-value" style="--c:#E8B4A0">96<span class="kpi-unit">%</span></div><div class="kpi-trend"><i data-lucide="target"></i>达成率预估</div></div>
+        </div>
+
+        <div class="card panel" style="padding:20px;overflow-x:auto">
+          <div class="panel-head">
+            <div class="panel-title">2026-08-25 · 注塑/吹塑/丝印/装配车间排产</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:11px;color:var(--text-3)">当前时间</span>
+              <span style="font-size:12px;font-family:var(--mono);color:var(--gold);font-weight:600" id="curTime">15:32</span>
+            </div>
+          </div>
+          <div class="schedule-grid" id="scheduleGrid">
+            <!-- JS 注入 -->
+          </div>
+          <div class="schedule-legend">
+            <span><i style="background:#3B82F6"></i>生产中</span>
+            <span><i style="background:#F59E0B"></i>换模/换色</span>
+            <span><i style="background:#E8B4A0"></i>新品试产</span>
+            <span><i style="background:#6B7280"></i>待机/保养</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 08: PDA 扫码 ============== -->
+      <section class="page" data-page="mes-pda">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">工位 PDA 扫码 <span class="page-title-en">PDA Workstation</span></h1>
+            <p class="page-sub">移动端现场作业 · 扫码报工 / 物料校验 / 首件确认 · Uniapp 一套代码适配 Android PDA</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="smartphone"></i>切换设备</button>
+            <button class="btn primary"><i data-lucide="download"></i>下载安装包</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:auto auto auto;gap:32px;justify-content:center;align-items:start;padding:20px 0">
+          <!-- PDA 1: 主工位 -->
+          <div>
+            <div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--text-2)">3 号注塑机 · 李工</div>
+            <div class="pda-frame">
+              <div class="pda-screen">
+                <div class="pda-status">
+                  <span>15:32</span>
+                  <span class="signal"><i data-lucide="signal" style="width:12px;height:12px"></i>5G <i data-lucide="battery-full" style="width:12px;height:12px"></i>86%</span>
+                </div>
+                <div class="pda-body">
+                  <div class="pda-head">
+                    <div class="pda-title">工位报工</div>
+                    <div class="pda-sub">生产工单 MO-20260825-0188</div>
+                  </div>
+                  <div class="pda-card">
+                    <div class="pdk">当前产品</div>
+                    <div class="pdv">PETG-A22-V3</div>
+                    <div class="pds">动物眼影精华瓶 30ml · 第 3 批</div>
+                  </div>
+                  <div class="pda-scan">
+                    <i data-lucide="scan-line"></i>
+                    <div class="pda-scan-text">对准瓶身二维码 / RFID 标签</div>
+                  </div>
+                  <div class="pda-card">
+                    <div class="pdk">本批进度</div>
+                    <div class="pdv">2,400 <span style="font-size:12px;color:var(--text-3)">/ 8,000 只</span></div>
+                    <div class="pds" style="margin-top:8px">
+                      <div style="height:4px;background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden"><div style="width:30%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2))"></div></div>
+                    </div>
+                  </div>
+                  <div class="pda-row"><span class="pdr-k">物料校验</span><span class="pdr-v" style="color:var(--ok)">✓ 已通过</span></div>
+                  <div class="pda-row"><span class="pdr-k">模具状态</span><span class="pdr-v" style="color:var(--ok)">✓ 已绑定</span></div>
+                  <div class="pda-row"><span class="pdr-k">工艺参数</span><span class="pdr-v">78℃ / 18.2s</span></div>
+                  <button class="pda-btn primary"><i data-lucide="check"></i>确认本批报工</button>
+                  <button class="pda-btn ghost"><i data-lucide="alert-triangle"></i>上报异常</button>
+                </div>
+                <div class="pda-tab">
+                  <a class="active"><i data-lucide="home"></i>首页</a>
+                  <a><i data-lucide="scan-line"></i>扫码</a>
+                  <a><i data-lucide="clipboard-list"></i>工单</a>
+                  <a><i data-lucide="user"></i>我的</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PDA 2: 首件确认 -->
+          <div>
+            <div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--text-2)">首件 IQC · 质量部</div>
+            <div class="pda-frame">
+              <div class="pda-screen">
+                <div class="pda-status">
+                  <span>15:30</span>
+                  <span class="signal"><i data-lucide="signal" style="width:12px;height:12px"></i>5G <i data-lucide="battery-full" style="width:12px;height:12px"></i>72%</span>
+                </div>
+                <div class="pda-body">
+                  <div class="pda-head">
+                    <div class="pda-title">首件确认</div>
+                    <div class="pda-sub">换模/换料后必做</div>
+                  </div>
+                  <div class="pda-card" style="border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05)">
+                    <div class="pdk" style="color:var(--warn)">⚠ 需在 5 分钟内完成</div>
+                    <div class="pdv" style="font-size:14px">5 项检查 + 拍照</div>
+                  </div>
+                  <div style="font-size:11px;color:var(--text-2);margin:10px 0 4px">检查项</div>
+                  <div class="pda-step done"><div class="step-dot">✓</div><div>外观（无毛边/缺料）</div></div>
+                  <div class="pda-step done"><div class="step-dot">✓</div><div>尺寸 ±0.05mm</div></div>
+                  <div class="pda-step done"><div class="step-dot">✓</div><div>烫金牢固度 5B</div></div>
+                  <div class="pda-step current"><div class="step-dot">4</div><div>瓶身重量 28.5g</div></div>
+                  <div class="pda-step"><div class="step-dot">5</div><div>拍照存档（3 张）</div></div>
+                  <button class="pda-btn primary"><i data-lucide="camera"></i>拍照并提交</button>
+                </div>
+                <div class="pda-tab">
+                  <a class="active"><i data-lucide="home"></i>首页</a>
+                  <a><i data-lucide="scan-line"></i>扫码</a>
+                  <a><i data-lucide="clipboard-list"></i>工单</a>
+                  <a><i data-lucide="user"></i>我的</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PDA 3: 工艺巡检 -->
+          <div>
+            <div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--text-2)">工艺巡检 · 张工</div>
+            <div class="pda-frame">
+              <div class="pda-screen">
+                <div class="pda-status">
+                  <span>15:28</span>
+                  <span class="signal"><i data-lucide="signal" style="width:12px;height:12px"></i>5G <i data-lucide="battery-medium" style="width:12px;height:12px"></i>54%</span>
+                </div>
+                <div class="pda-body">
+                  <div class="pda-head">
+                    <div class="pda-title">工艺巡检</div>
+                    <div class="pda-sub">5 号注塑机 · 异常处理</div>
+                  </div>
+                  <div class="pda-card" style="border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)">
+                    <div class="pdk" style="color:var(--err)">● 异常待处理</div>
+                    <div class="pdv" style="font-size:14px">M-PL-J29 模具温度异常</div>
+                    <div class="pds">5 秒内波动 8℃ · 影响外观</div>
+                  </div>
+                  <div class="pda-card">
+                    <div class="pdk">建议处理</div>
+                    <div style="font-size:12px;line-height:1.6;margin-top:6px;color:var(--text)">
+                      ① 检查冷却水管流量<br>
+                      ② 校验模温机设定<br>
+                      ③ 必要时更换密封圈
+                    </div>
+                  </div>
+                  <div class="pda-row"><span class="pdr-k">影响订单</span><span class="pdr-v" style="color:var(--warn)">3 单</span></div>
+                  <div class="pda-row"><span class="pdr-k">影响数量</span><span class="pdr-v">1.2 万只</span></div>
+                  <button class="pda-btn primary"><i data-lucide="wrench"></i>到场处理</button>
+                  <button class="pda-btn ghost"><i data-lucide="phone"></i>呼叫支援</button>
+                </div>
+                <div class="pda-tab">
+                  <a class="active"><i data-lucide="home"></i>首页</a>
+                  <a><i data-lucide="scan-line"></i>扫码</a>
+                  <a><i data-lucide="clipboard-list"></i>工单</a>
+                  <a><i data-lucide="user"></i>我的</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 09: IoT 实时数据 ============== -->
+      <section class="page" data-page="mes-iot">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">IoT 实时数据 <span class="page-title-en">Real-time Telemetry</span></h1>
+            <p class="page-sub">Modbus / OPC-UA / MQTT 多协议接入 · 注塑机/吹塑机/模温机/水电气全维度实时采集</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="settings"></i>采集配置</button>
+            <button class="btn ghost"><i data-lucide="bell"></i>阈值告警</button>
+            <button class="btn primary"><i data-lucide="download"></i>导出实时数据</button>
+          </div>
+        </div>
+
+        <div class="iot-grid" id="iotGrid">
+          <!-- JS 注入 8 个指标卡 -->
+        </div>
+
+        <div class="iot-charts">
+          <div class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">3 号注塑机 · 多参数实时趋势</div>
+              <div style="display:flex;gap:8px">
+                <span class="dash-tab active">1h</span>
+                <span class="dash-tab">4h</span>
+                <span class="dash-tab">24h</span>
+              </div>
+            </div>
+            <div class="chart-box" id="chartIotTrend" style="height:340px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">车间能耗分布</div></div>
+            <div class="chart-box" id="chartEnergy" style="height:340px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 10: 异常派工 ============== -->
+      <section class="page" data-page="mes-issue">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">异常派工 <span class="page-title-en">Issue Kanban</span></h1>
+            <p class="page-sub">异常事件 → 自动派单 → 工程师接单 → 处理闭环 · 拖拽式看板</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="filter"></i>筛选</button>
+            <button class="btn primary"><i data-lucide="plus"></i>新建异常工单</button>
+          </div>
+        </div>
+
+        <div class="alert-row" style="margin-bottom:20px">
+          <div class="alert-card" style="--c:#EF4444"><div class="alert-icon"><i data-lucide="alert-octagon"></i></div><div class="alert-body"><div class="alert-num">3</div><div class="alert-cap">待派工</div></div></div>
+          <div class="alert-card" style="--c:#3B82F6"><div class="alert-icon"><i data-lucide="wrench"></i></div><div class="alert-body"><div class="alert-num">5</div><div class="alert-cap">处理中</div></div></div>
+          <div class="alert-card" style="--c:#F59E0B"><div class="alert-icon"><i data-lucide="check-circle"></i></div><div class="alert-body"><div class="alert-num">2</div><div class="alert-cap">待验收</div></div></div>
+          <div class="alert-card" style="--c:#10B981"><div class="alert-icon"><i data-lucide="check-check"></i></div><div class="alert-body"><div class="alert-num">18</div><div class="alert-cap">本月已闭环</div></div></div>
+        </div>
+
+        <div class="issue-kanban" id="issueKanban">
+          <!-- JS 注入 4 列看板 -->
+        </div>
+      </section>
+
+      <!-- ============== Page 11: WMS 仓储 ============== -->
+      <section class="page" data-page="wms">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">WMS 仓储管理 <span class="page-title-en">Warehouse Management</span></h1>
+            <p class="page-sub">原材料仓 / 半成品仓 / 成品仓 / 线边仓四仓协同 · AGV + 立体库</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="package-plus"></i>入库单</button>
+            <button class="btn ghost"><i data-lucide="package-minus"></i>出库单</button>
+            <button class="btn primary"><i data-lucide="clipboard-list"></i>盘点</button>
+          </div>
+        </div>
+
+        <div class="wms-top">
+          <div class="wms-stat" style="--c:#3B82F6"><div class="ws-num">12,840</div><div class="ws-cap">原材料库存 (kg)</div><div class="ws-sub">PETG · 色母 · 助剂</div></div>
+          <div class="wms-stat" style="--c:#10B981"><div class="ws-num">3,260</div><div class="ws-cap">半成品 (件)</div><div class="ws-sub">瓶坯 · 烫金后</div></div>
+          <div class="wms-stat" style="--c:#E8B4A0"><div class="ws-num">286,500</div><div class="ws-cap">成品库存 (只)</div><div class="ws-sub">6 大客户在库</div></div>
+          <div class="wms-stat" style="--c:#F59E0B"><div class="ws-num">8</div><div class="ws-cap">库龄预警 SKU</div><div class="ws-sub">超 90 天 · 需优先发货</div></div>
+          <div class="wms-stat" style="--c:#EF4444"><div class="ws-num">3</div><div class="ws-cap">缺货风险</div><div class="ws-sub">PETG 黑色色母</div></div>
+          <div class="wms-stat" style="--c:var(--text)"><div class="ws-num">3,860</div><div class="ws-cap">库位数 · 总计</div><div class="ws-sub">已用 2,140 · 利用率 55%</div></div>
+        </div>
+
+        <div class="wms-grid-wrap">
+          <div class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">库位热力图 · A 区原材料仓</div>
+              <div style="display:flex;gap:12px;font-size:11px;color:var(--text-2)">
+                <span><i style="display:inline-block;width:8px;height:8px;background:#10B981;border-radius:2px;margin-right:4px"></i>空闲</span>
+                <span><i style="display:inline-block;width:8px;height:8px;background:#3B82F6;border-radius:2px;margin-right:4px"></i>占用</span>
+                <span><i style="display:inline-block;width:8px;height:8px;background:#F59E0B;border-radius:2px;margin-right:4px"></i>临期</span>
+                <span><i style="display:inline-block;width:8px;height:8px;background:#EF4444;border-radius:2px;margin-right:4px"></i>缺货</span>
+              </div>
+            </div>
+            <div id="wmsHeatmap" style="height:380px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">FIFO · 库龄预警</div>
+              <span class="panel-sub">先进先出</span>
+            </div>
+            <div id="wmsAging" style="font-size:12px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 12: 新厂搬迁协同 ============== -->
+      <section class="page" data-page="newplant">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">新厂搬迁与设备进场协同 <span class="page-title-en">New Plant Migration</span></h1>
+            <p class="page-sub">7 万 m² 新智造基地 · 设备采购履约 · 模具迁移路线 · 现场移动签到</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="map"></i>新厂地图</button>
+            <button class="btn primary"><i data-lucide="plus"></i>登记设备</button>
+          </div>
+        </div>
+
+        <div class="np-tabs" id="npTabs">
+          <div class="np-tab active" data-np="gantt">设备采购甘特</div>
+          <div class="np-tab" data-np="debug">验收与调试</div>
+          <div class="np-tab" data-np="mould">模具迁移路线</div>
+          <div class="np-tab" data-np="checkin">现场签到</div>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="card panel" style="margin-bottom:16px">
+          <div class="panel-title" style="margin-bottom:8px">搬迁倒计时 · 距试生产 <span style="color:var(--gold);font-family:var(--mono)">96</span> 天</div>
+          <div class="np-timeline">
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+              <div class="np-tnode done"><div class="tn-circle"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="tn-label">立项</div><div class="tn-date">2025-03</div></div>
+              <div class="np-tnode done"><div class="tn-circle"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="tn-label">土建</div><div class="tn-date">2025-08</div></div>
+              <div class="np-tnode done"><div class="tn-circle"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="tn-label">机电</div><div class="tn-date">2026-04</div></div>
+              <div class="np-tnode current"><div class="tn-circle">4</div><div class="tn-label">设备进场</div><div class="tn-date">2026-08</div></div>
+              <div class="np-tnode"><div class="tn-circle">5</div><div class="tn-label">数字大脑</div><div class="tn-date">2026-10</div></div>
+              <div class="np-tnode"><div class="tn-circle">6</div><div class="tn-label">试生产</div><div class="tn-date">2026-12</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内容区 -->
+        <div id="npContent">
+          <!-- 默认：甘特 -->
+          <div class="np-pane" data-pane="gantt">
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">设备采购履约甘特图</div><span class="panel-sub">共 18 台关键设备 · 8 家供应商</span></div>
+              <div class="chart-box" id="chartGantt" style="height:380px"></div>
+            </div>
+          </div>
+          <div class="np-pane" data-pane="debug" style="display:none">
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">设备验收与调试看板</div></div>
+              <div id="debugBoard"></div>
+            </div>
+          </div>
+          <div class="np-pane" data-pane="mould" style="display:none">
+            <div class="np-route">
+              <div style="font-size:14px;font-weight:600;margin-bottom:8px">PETG-A22 精华瓶模具迁移路线</div>
+              <div class="np-route-flow">
+                <div class="np-step done">旧厂模仓 A-08<br><span style="font-size:10px;color:var(--text-3)">2026-08-28</span></div>
+                <span class="np-arrow">→</span>
+                <div class="np-step done">拆模/打箱<br><span style="font-size:10px;color:var(--text-3)">2h</span></div>
+                <span class="np-arrow">→</span>
+                <div class="np-step cur">运输中 (15km)<br><span style="font-size:10px">约 1.5h</span></div>
+                <span class="np-arrow">→</span>
+                <div class="np-step">新厂模仓 A-12<br><span style="font-size:10px;color:var(--text-3)">2026-08-29</span></div>
+                <span class="np-arrow">→</span>
+                <div class="np-step">安装调试<br><span style="font-size:10px;color:var(--text-3)">8h</span></div>
+                <span class="np-arrow">→</span>
+                <div class="np-step">首件验证<br><span style="font-size:10px;color:var(--text-3)">2026-08-30</span></div>
+              </div>
+              <table style="width:100%;font-size:12px;margin-top:16px">
+                <thead style="color:var(--text-3);text-align:left">
+                  <tr style="border-bottom:1px solid var(--line)">
+                    <th style="padding:8px 0">模具</th><th>起点</th><th>终点</th><th>窗口</th><th>负责人</th><th>状态</th>
+                  </tr>
+                </thead>
+                <tbody id="mouldRouteTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="np-pane" data-pane="checkin" style="display:none">
+            <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+              <div class="card panel">
+                <div class="panel-head"><div class="panel-title">今日现场签到记录</div><span class="panel-sub">实时位置打卡</span></div>
+                <div id="checkinList"></div>
+              </div>
+              <div class="pda-frame" style="height:620px">
+                <div class="pda-screen">
+                  <div class="pda-status"><span>15:30</span><span class="signal"><i data-lucide="map-pin" style="width:12px;height:12px"></i>新厂 · A 区</span></div>
+                  <div class="pda-body">
+                    <div class="pda-head">
+                      <div class="pda-title">现场签到</div>
+                      <div class="pda-sub">新智造基地 · 设备进场</div>
+                    </div>
+                    <div class="pda-scan"><i data-lucide="map-pin"></i><div class="pda-scan-text">已定位 · 新厂 A 区</div></div>
+                    <div class="pda-card">
+                      <div class="pdk">设备</div>
+                      <div class="pdv">5 号注塑机 (IM-05)</div>
+                      <div class="pds">海天 · MA1600/540</div>
+                    </div>
+                    <div class="pda-card">
+                      <div class="pdk">作业类型</div>
+                      <div style="display:flex;gap:6px;margin-top:6px">
+                        <span class="status-pill ok" style="cursor:pointer">进场</span>
+                        <span class="status-pill info" style="cursor:pointer">调试</span>
+                        <span class="status-pill warn" style="cursor:pointer">验收</span>
+                        <span class="status-pill err" style="cursor:pointer">异常</span>
+                      </div>
+                    </div>
+                    <div class="pda-card">
+                      <div class="pdk">现场照片</div>
+                      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px">
+                        <div style="aspect-ratio:1;background:linear-gradient(135deg,#374151,#1F2937);border-radius:4px;display:grid;place-items:center"><i data-lucide="camera" style="width:16px;height:16px;color:var(--text-3)"></i></div>
+                        <div style="aspect-ratio:1;background:linear-gradient(135deg,#374151,#1F2937);border-radius:4px;display:grid;place-items:center"><i data-lucide="camera" style="width:16px;height:16px;color:var(--text-3)"></i></div>
+                        <div style="aspect-ratio:1;background:linear-gradient(135deg,#374151,#1F2937);border-radius:4px;display:grid;place-items:center"><i data-lucide="plus" style="width:16px;height:16px;color:var(--gold)"></i></div>
+                      </div>
+                    </div>
+                    <button class="pda-btn primary"><i data-lucide="check"></i>提交签到</button>
+                  </div>
+                  <div class="pda-tab">
+                    <a class="active"><i data-lucide="home"></i>首页</a>
+                    <a><i data-lucide="camera"></i>拍照</a>
+                    <a><i data-lucide="map"></i>地图</a>
+                    <a><i data-lucide="user"></i>我的</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 13: 客户 Portal ============== -->
+      <section class="page" data-page="client-portal">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">客户协同 Portal <span class="page-title-en">Client Portal</span></h1>
+            <p class="page-sub">客户专属空间 · 订单透明 / 质量透明 / 碳足迹报告 / 远程验厂</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="users"></i>客户列表</button>
+            <button class="btn primary"><i data-lucide="settings"></i>权限配置</button>
+          </div>
+        </div>
+
+        <div class="client-bar">
+          <div class="cb-brand">
+            <div class="cb-logo">完</div>
+            <div>
+              <div class="cb-name">完美日记 · 供应链中心</div>
+              <div class="cb-meta">账号 jenny.zhao@wmrj.com · 高级会员 · 3 个在产订单</div>
+            </div>
+          </div>
+          <div class="cb-actions">
+            <button class="btn ghost"><i data-lucide="message-circle"></i>联系伍星</button>
+            <button class="btn ghost"><i data-lucide="download"></i>下载合同</button>
+            <button class="btn primary"><i data-lucide="plus"></i>新建询价</button>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-label">在产订单</div><div class="kpi-value" style="--c:#3B82F6">3<span class="kpi-unit">单</span></div><div class="kpi-trend"><i data-lucide="clock"></i>合计 26 万只</div></div>
+          <div class="kpi-card"><div class="kpi-label">本月交付</div><div class="kpi-value" style="--c:#10B981">5<span class="kpi-unit">单</span></div><div class="kpi-trend up"><i data-lucide="trending-up"></i>准时率 100%</div></div>
+          <div class="kpi-card"><div class="kpi-label">质量异常</div><div class="kpi-value" style="--c:#10B981">0<span class="kpi-unit">次</span></div><div class="kpi-trend"><i data-lucide="shield"></i>近 90 天</div></div>
+          <div class="kpi-card"><div class="kpi-label">碳足迹</div><div class="kpi-value" style="--c:var(--ok)">-18<span class="kpi-unit">%</span></div><div class="kpi-trend up"><i data-lucide="leaf"></i>优于行业均值</div></div>
+        </div>
+
+        <div class="card panel" style="margin-bottom:16px">
+          <div class="panel-head"><div class="panel-title">我的订单 · 实时进度</div><a class="dash-link">查看全部 →</a></div>
+          <table style="width:100%;font-size:13px">
+            <thead style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:1px">
+              <tr style="border-bottom:1px solid var(--line)">
+                <th style="padding:10px 0;text-align:left">订单号</th>
+                <th style="text-align:left">产品</th>
+                <th style="text-align:left">数量</th>
+                <th style="text-align:left">交期</th>
+                <th style="text-align:left">进度</th>
+                <th style="text-align:left">质量</th>
+                <th style="text-align:left">碳足迹</th>
+              </tr>
+            </thead>
+            <tbody id="clientOrderTable"></tbody>
+          </table>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <a class="card panel" style="cursor:pointer" data-goto="client-carbon">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.05));display:grid;place-items:center;color:var(--ok)"><i data-lucide="leaf" style="width:24px;height:24px"></i></div>
+              <div>
+                <div style="font-size:14px;font-weight:600">碳足迹报告</div>
+                <div style="font-size:11px;color:var(--text-2);margin-top:2px">每瓶可下载 · 已认证</div>
+              </div>
+            </div>
+          </a>
+          <a class="card panel" style="cursor:pointer" data-goto="client-quality">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(59,130,246,.05));display:grid;place-items:center;color:var(--info)"><i data-lucide="shield-check" style="width:24px;height:24px"></i></div>
+              <div>
+                <div style="font-size:14px;font-weight:600">质量数据透明</div>
+                <div style="font-size:11px;color:var(--text-2);margin-top:2px">IQC / PQC / FQC 全程可见</div>
+              </div>
+            </div>
+          </a>
+          <a class="card panel" style="cursor:pointer" data-goto="client-audit">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,rgba(232,180,160,.2),rgba(232,180,160,.05));display:grid;place-items:center;color:var(--gold)"><i data-lucide="video" style="width:24px;height:24px"></i></div>
+              <div>
+                <div style="font-size:14px;font-weight:600">远程验厂</div>
+                <div style="font-size:11px;color:var(--text-2);margin-top:2px">8 路车间实时直播</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============== Page 14: 碳足迹报告 ============== -->
+      <section class="page" data-page="client-carbon">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">碳足迹报告 <span class="page-title-en">Carbon Footprint Report</span></h1>
+            <p class="page-sub">基于 ISO 14067 · 从原料到成品的全生命周期碳排放核算 · 优于行业均值 18%</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="share-2"></i>分享客户</button>
+            <button class="btn primary"><i data-lucide="download"></i>下载完整报告 (PDF)</button>
+          </div>
+        </div>
+
+        <div class="client-bar">
+          <div class="cb-brand">
+            <div class="cb-logo">完</div>
+            <div>
+              <div class="cb-name">完美日记 · 动物眼影精华瓶 30ml</div>
+              <div class="cb-meta">订单 SO-20260825-0188 · 8 万只 · 报告期 2026-08</div>
+            </div>
+          </div>
+          <div class="cb-actions">
+            <span class="status-pill ok">已认证</span>
+            <span class="status-pill info">ISO 14067</span>
+          </div>
+        </div>
+
+        <div class="carbon-hero">
+          <div class="carbon-card">
+            <div class="cc-cap">单瓶碳足迹</div>
+            <div class="cc-num">0.42 <span style="font-size:14px">kgCO₂e</span></div>
+            <div class="cc-vs">↓ 较上批 -8%</div>
+          </div>
+          <div class="carbon-card">
+            <div class="cc-cap">本批总碳排</div>
+            <div class="cc-num">33.6 <span style="font-size:14px">tCO₂e</span></div>
+            <div class="cc-vs">↓ 较行业均值 -18%</div>
+          </div>
+          <div class="carbon-card">
+            <div class="cc-cap">碳中和比例</div>
+            <div class="cc-num">42<span style="font-size:14px">%</span></div>
+            <div class="cc-vs">光伏发电抵消</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">全生命周期碳排放分布</div></div>
+            <div class="chart-box" id="chartCarbon" style="height:320px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">碳足迹核证信息</div></div>
+            <div style="font-size:13px">
+              <div class="pda-row"><span class="pdr-k">核证机构</span><span class="pdr-v">SGS 通标</span></div>
+              <div class="pda-row"><span class="pdr-k">核证日期</span><span class="pdr-v">2026-08-25</span></div>
+              <div class="pda-row"><span class="pdr-k">依据标准</span><span class="pdr-v">ISO 14067:2018</span></div>
+              <div class="pda-row"><span class="pdr-k">数据完整度</span><span class="pdr-v" style="color:var(--ok)">98.2%</span></div>
+              <div class="pda-row"><span class="pdr-k">数据范围</span><span class="pdr-v">Cradle-to-Gate</span></div>
+              <div class="pda-row"><span class="pdr-k">核证报告号</span><span class="pdr-v">SGS-CN-2026-08-1820</span></div>
+              <div class="pda-row"><span class="pdr-k">有效期至</span><span class="pdr-v">2027-08-24</span></div>
+              <div style="margin-top:16px;padding:12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:8px">
+                <div style="font-size:12px;color:var(--ok);font-weight:600;margin-bottom:4px">✓ ESG 报告可直接引用</div>
+                <div style="font-size:11px;color:var(--text-2)">本数据已通过 GRI 305、CDP 气候问卷、SASB 包装行业标准验证</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head"><div class="panel-title">减排亮点 · 工艺改进</div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div style="padding:14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px">
+              <div style="font-size:11px;color:var(--ok);font-weight:600;margin-bottom:6px">★ 原料替代</div>
+              <div style="font-size:12px;color:var(--text)">采用再生 PETG 替代 30% 原料，减碳 12%</div>
+            </div>
+            <div style="padding:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px">
+              <div style="font-size:11px;color:var(--info);font-weight:600;margin-bottom:6px">★ 工艺优化</div>
+              <div style="font-size:12px;color:var(--text)">模温机变频控制，能耗下降 8%</div>
+            </div>
+            <div style="padding:14px;background:rgba(232,180,160,.1);border:1px solid rgba(232,180,160,.3);border-radius:8px">
+              <div style="font-size:11px;color:var(--gold);font-weight:600;margin-bottom:6px">★ 绿电应用</div>
+              <div style="font-size:12px;color:var(--text)">屋顶光伏 + 谷电储能，绿电占比 42%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 15: 质量数据透明 ============== -->
+      <section class="page" data-page="client-quality">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">质量数据透明 <span class="page-title-en">Quality Transparency</span></h1>
+            <p class="page-sub">IQC / PQC / FQC 全流程质量数据 · 一瓶一码追溯</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="filter"></i>筛选批次</button>
+            <button class="btn primary"><i data-lucide="download"></i>下载质检报告</button>
+          </div>
+        </div>
+
+        <div class="quality-stat">
+          <div class="qs-item"><div class="qs-num">99.68<span style="font-size:14px;color:var(--text-3)">%</span></div><div class="qs-cap">批次合格率</div><div class="qs-trend" style="color:var(--ok)">↑ 较上月 +0.12%</div></div>
+          <div class="qs-item"><div class="qs-num">0.32<span style="font-size:14px;color:var(--text-3)">%</span></div><div class="qs-cap">不良率</div><div class="qs-trend" style="color:var(--ok)">↓ 较上月 -0.18%</div></div>
+          <div class="qs-item"><div class="qs-num">0</div><div class="qs-cap">客户投诉</div><div class="qs-trend" style="color:var(--text-3)">近 90 天</div></div>
+          <div class="qs-item"><div class="qs-num">A+</div><div class="qs-cap">质量等级</div><div class="qs-trend" style="color:var(--gold)">客户评定</div></div>
+        </div>
+
+        <div class="card panel" style="margin-bottom:16px">
+          <div class="panel-head"><div class="panel-title">不良率趋势 · 近 12 周</div></div>
+          <div class="chart-box" id="chartQuality" style="height:280px"></div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head"><div class="panel-title">三检记录</div><span class="panel-sub">最近 8 批</span></div>
+          <div class="life-table" id="qualityTable">
+            <div class="lt-row head"><div>批次</div><div>产品</div><div>数量</div><div>IQC</div><div>PQC</div><div>FQC</div><div>综合</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 16: 远程验厂 ============== -->
+      <section class="page" data-page="client-audit">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">远程验厂 <span class="page-title-en">Remote Audit</span></h1>
+            <p class="page-sub">8 路车间实时视频 · 客户可在线完成初步验厂 · 节省差旅</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="calendar"></i>预约验厂</button>
+            <button class="btn primary"><i data-lucide="video"></i>发起直播</button>
+          </div>
+        </div>
+
+        <div class="audit-grid">
+          <div>
+            <div class="audit-video">
+              <div class="audit-label"><span class="dot"></span>LIVE · 注塑车间</div>
+              <div class="audit-play"><i data-lucide="play"></i></div>
+              <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:2">
+                <div style="font-size:11px;color:rgba(255,255,255,.7);font-family:var(--mono)">CAM-01 · 15:32:18</div>
+                <div style="display:flex;gap:6px">
+                  <span style="padding:3px 8px;background:rgba(0,0,0,.5);border-radius:3px;font-size:11px">1080p</span>
+                  <span style="padding:3px 8px;background:rgba(0,0,0,.5);border-radius:3px;font-size:11px">15fps</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">
+              <div class="audit-video" style="aspect-ratio:4/3"><div class="audit-label" style="background:rgba(16,185,129,.85)"><span class="dot"></span>吹塑</div></div>
+              <div class="audit-video" style="aspect-ratio:4/3"><div class="audit-label"><span class="dot"></span>烫金</div></div>
+              <div class="audit-video" style="aspect-ratio:4/3"><div class="audit-label" style="background:rgba(16,185,129,.85)"><span class="dot"></span>丝印</div></div>
+              <div class="audit-video" style="aspect-ratio:4/3"><div class="audit-label" style="background:rgba(16,185,129,.85)"><span class="dot"></span>装配</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="card panel" style="margin-bottom:16px">
+              <div class="panel-head"><div class="panel-title">验厂项目清单</div><span class="panel-sub">8/12 已完成</span></div>
+              <div id="auditList"></div>
+            </div>
+            <div class="card panel">
+              <div class="panel-head"><div class="panel-title">历次验厂</div></div>
+              <div style="font-size:12px">
+                <div class="pda-row"><span class="pdr-k">2026-06-15</span><span class="pdr-v" style="color:var(--ok)">通过 · 96 分</span></div>
+                <div class="pda-row"><span class="pdr-k">2026-03-22</span><span class="pdr-v" style="color:var(--ok)">通过 · 92 分</span></div>
+                <div class="pda-row"><span class="pdr-k">2025-12-08</span><span class="pdr-v" style="color:var(--warn)">整改后通过 · 88 分</span></div>
+                <div class="pda-row"><span class="pdr-k">2025-09-15</span><span class="pdr-v" style="color:var(--ok)">通过 · 94 分</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 17: ERP 对接中心 ============== -->
+      <section class="page" data-page="erp-hub">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">ERP 对接中心 <span class="page-title-en">ERP Integration Hub</span></h1>
+            <p class="page-sub">现有 ERP 主数据拉通 · 业务流程双向同步 · 自研可一键接管</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="play"></i>测试连通性</button>
+            <button class="btn primary"><i data-lucide="refresh-cw"></i>立即同步</button>
+          </div>
+        </div>
+
+        <div class="arch-3col" style="margin-bottom:20px">
+          <div class="arch-side">
+            <div class="arch-box"><div class="ab-title">现有 ERP</div><div class="ab-cap">SAP / 用友 U9 · 主数据 + 财务</div></div>
+            <div class="arch-box"><div class="ab-title">MES</div><div class="ab-cap">鼎捷 / 兰光 · 工单 + 报工</div></div>
+            <div class="arch-box"><div class="ab-title">WMS</div><div class="ab-cap">旺店通 / 巨沃 · 库存 + 物流</div></div>
+          </div>
+          <div class="arch-center">
+            <div class="ac-name">数智化协同中枢</div>
+            <div class="ac-cap">伍星御瓶自研 · 业务 + 数据 + 协同</div>
+            <div class="ac-feats">
+              <span>模具协同</span>
+              <span>IoT 采集</span>
+              <span>碳足迹</span>
+              <span>客户 Portal</span>
+              <span>新厂搬迁</span>
+              <span>MES 增强</span>
+            </div>
+          </div>
+          <div class="arch-side">
+            <div class="arch-box"><div class="ab-title">设备层</div><div class="ab-cap">注塑机/吹塑机/AGV/PLC</div></div>
+            <div class="arch-box"><div class="ab-title">客户层</div><div class="ab-cap">完美日记/珀莱雅/毛戈平</div></div>
+            <div class="arch-box"><div class="ab-title">供应商层</div><div class="ab-cap">SK Chemicals/巴斯夫/海天</div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">数据流向</div><span class="panel-sub">12 条主数据流 · 实时双向</span></div>
+            <div class="chart-box" id="chartErpFlow" style="height:280px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">同步状态</div></div>
+            <div style="font-size:12px">
+              <div class="pda-row"><span class="pdr-k">物料主数据</span><span class="pdr-v" style="color:var(--ok)">已对接 · 1,248 条</span></div>
+              <div class="pda-row"><span class="pdr-k">BOM 主数据</span><span class="pdr-v" style="color:var(--ok)">已对接 · 326 条</span></div>
+              <div class="pda-row"><span class="pdr-k">销售订单</span><span class="pdr-v" style="color:var(--ok)">实时同步 · 28 单</span></div>
+              <div class="pda-row"><span class="pdr-k">采购订单</span><span class="pdr-v" style="color:var(--ok)">已对接</span></div>
+              <div class="pda-row"><span class="pdr-k">库存数据</span><span class="pdr-v" style="color:var(--ok)">每 5 分钟</span></div>
+              <div class="pda-row"><span class="pdr-k">财务凭证</span><span class="pdr-v" style="color:var(--warn)">每日 T+1</span></div>
+              <div class="pda-row"><span class="pdr-k">IoT 实时数据</span><span class="pdr-v" style="color:var(--ok)">自采 · 不依赖 ERP</span></div>
+              <div class="pda-row"><span class="pdr-k">模具主数据</span><span class="pdr-v" style="color:var(--gold)">协同中枢自有</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head"><div class="panel-title">API 接口列表</div><span class="panel-sub">24 个对外接口 · OpenAPI 3.0</span></div>
+          <div class="api-list" id="apiList"></div>
+        </div>
+      </section>
+
+      <!-- ============== Page 18: 客户侧订单详情穿透 ============== -->
+      <section class="page" data-page="client-order-detail">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">订单详情穿透 <span class="page-title-en">Order Drill-Down</span></h1>
+            <p class="page-sub">SO-20260825-0188 · 完美日记 · 动物眼影精华瓶 · 销售-生产-质量-物流一屏穿透</p>
+          </div>
+          <div class="page-actions">
+            <a class="btn ghost" data-goto="client-portal"><i data-lucide="arrow-left"></i>返回客户 Portal</a>
+            <button class="btn ghost"><i data-lucide="share-2"></i>分享给客户</button>
+            <button class="btn primary"><i data-lucide="download"></i>导出 PDF</button>
+          </div>
+        </div>
+
+        <!-- 顶部状态条 -->
+        <div class="order-status-strip">
+          <div class="os-step done"><div class="os-dot"></div><div class="os-cap">订单下达</div><div class="os-time">08-25 09:00</div></div>
+          <div class="os-line done"></div>
+          <div class="os-step done"><div class="os-dot"></div><div class="os-cap">原料齐备</div><div class="os-time">08-25 11:30</div></div>
+          <div class="os-line done"></div>
+          <div class="os-step cur"><div class="os-dot"></div><div class="os-cap">生产中</div><div class="os-time">64% · Day 2/6</div></div>
+          <div class="os-line"></div>
+          <div class="os-step"><div class="os-dot"></div><div class="os-cap">首件 IQC</div><div class="os-time">—</div></div>
+          <div class="os-line"></div>
+          <div class="os-step"><div class="os-dot"></div><div class="os-cap">末件 FQC</div><div class="os-time">—</div></div>
+          <div class="os-line"></div>
+          <div class="os-step"><div class="os-dot"></div><div class="os-cap">入库</div><div class="os-time">—</div></div>
+          <div class="os-line"></div>
+          <div class="os-step"><div class="os-dot"></div><div class="os-cap">物流发出</div><div class="os-time">—</div></div>
+        </div>
+
+        <!-- 4 屏联动 -->
+        <div class="dash-grid" style="margin-top:16px">
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">① 当前在哪台机生产</div><span class="dash-pill" style="--c:#10B981">运行中</span></div>
+            <div class="now-machine">
+              <div class="nm-vis"><div class="nm-glow"></div><div class="nm-text">IM-03</div><div class="nm-cap">3 号注塑机 · 已在产 2 天</div></div>
+              <div style="font-size:12px;color:var(--text-2);line-height:1.8">
+                <div>模塑次数 · <b style="color:var(--text)">5,120 / 8,000</b></div>
+                <div>模温 · <b style="color:var(--text)">78℃</b></div>
+                <div>周期 · <b style="color:var(--text)">18.2s</b></div>
+                <div>操作员 · <b style="color:var(--text)">李工（高级技师）</b></div>
+                <div>良品率 · <b style="color:var(--ok)">99.68%</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">② 当日生产进度</div><span class="dash-pill" style="--c:#E8B4A0">+1,400 只/班</span></div>
+            <div class="chart-box" id="chartOrderProgress" style="height:160px"></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">③ 累计质量</div></div>
+            <div class="quality-mini">
+              <div class="qm-item"><div class="qm-label">IQC</div><div class="qm-num" style="color:var(--ok)">100%</div></div>
+              <div class="qm-item"><div class="qm-label">PQC</div><div class="qm-num" style="color:var(--ok)">99.68%</div></div>
+              <div class="qm-item"><div class="qm-label">FQC</div><div class="qm-num" style="color:var(--text-3)">—</div></div>
+            </div>
+            <div class="trend-up"><i data-lucide="trending-up"></i>不良率 0.32% · 优于行业均值 0.76%</div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">④ 碳足迹累计</div></div>
+            <div class="carbon-num">0.42<span class="cn-unit">kgCO₂e / 只</span></div>
+            <div class="trend-up" style="color:var(--ok)"><i data-lucide="leaf"></i>优于行业均值 18%</div>
+            <div style="margin-top:8px"><a class="btn ghost" style="padding:4px 10px;font-size:11px" data-goto="client-carbon">查看碳足迹详情 →</a></div>
+          </div>
+        </div>
+
+        <!-- 下半屏：瓶身赋码 + 物流 -->
+        <div class="dash-grid" style="margin-top:16px">
+          <div class="dash-card span-2">
+            <div class="dash-head">
+              <div class="dash-title">⑤ 瓶身赋码扫码视频流（前 20 个）</div>
+              <span class="dash-pill" style="--c:#3B82F6">每瓶唯一码 · 一瓶一码</span>
+            </div>
+            <div class="bottle-code-list" id="bottleCodeList"></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">⑥ 物流路径（待发）</div></div>
+            <div class="route-step">
+              <div class="rs-node done"><i data-lucide="package"></i><span>生产入库</span></div>
+              <div class="rs-line"></div>
+              <div class="rs-node cur"><i data-lucide="warehouse"></i><span>待出厂</span></div>
+              <div class="rs-line"></div>
+              <div class="rs-node"><i data-lucide="truck"></i><span>广州 → 上海</span></div>
+              <div class="rs-line"></div>
+              <div class="rs-node"><i data-lucide="home"></i><span>客户工厂</span></div>
+            </div>
+            <div class="rs-foot">预计发出 09-04 · 客户签收 09-05</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 19: 模具×订单时间线甘特 ============== -->
+      <section class="page" data-page="mould-timeline">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">模具×订单时间线 <span class="page-title-en">Mould × Order Timeline</span></h1>
+            <p class="page-sub">未来 3 个月订单排产 vs 模具寿命 · 换模撞寿命风险提前 30 天预警</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="filter"></i>筛选客户</button>
+            <button class="btn primary"><i data-lucide="zap"></i>一键 APS 优化</button>
+          </div>
+        </div>
+
+        <div class="alert-row" style="margin-bottom:16px">
+          <div class="alert-card" style="--c:#10B981"><div class="alert-icon"><i data-lucide="check-circle-2"></i></div><div><div class="alert-num">14</div><div style="font-size:11px;color:var(--text-3)">3 个月内无风险</div></div></div>
+          <div class="alert-card" style="--c:#F59E0B"><div class="alert-icon"><i data-lucide="alert-triangle"></i></div><div><div class="alert-num">3</div><div style="font-size:11px;color:var(--text-3)">30 天内需换模</div></div></div>
+          <div class="alert-card" style="--c:#EF4444"><div class="alert-icon"><i data-lucide="siren"></i></div><div><div class="alert-num">2</div><div style="font-size:11px;color:var(--text-3)">撞寿命上限</div></div></div>
+          <div class="alert-card" style="--c:#E8B4A0"><div class="alert-icon"><i data-lucide="calendar-clock"></i></div><div><div class="alert-num">96</div><div style="font-size:11px;color:var(--text-3)">平均剩余天数</div></div></div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head"><div class="panel-title">未来 90 天时间线（横轴：日期 / 纵轴：模具 × 客户）</div></div>
+          <div class="chart-box" id="chartMouldTimeline" style="height:460px"></div>
+        </div>
+
+        <div class="card panel" style="margin-top:16px">
+          <div class="panel-head"><div class="panel-title">🔴 撞寿命预警清单（2 项）</div></div>
+          <div class="risk-list" id="riskList"></div>
+        </div>
+      </section>
+
+      <!-- ============== Page 20: APS 试排对比 ============== -->
+      <section class="page" data-page="aps-compare">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">APS 试排对比 <span class="page-title-en">APS Plan Comparison</span></h1>
+            <p class="page-sub">同一组 8 个订单 · 人工经验排产 vs APS 算法排产 · 量化收益</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn primary"><i data-lucide="play"></i>重算 APS</button>
+          </div>
+        </div>
+
+        <div class="aps-kpi-row">
+          <div class="aks-card"><div class="aks-label">机台利用率</div><div class="aks-vs"><div class="aks-old"><span>人工</span><b>72%</b></div><i data-lucide="arrow-right"></i><div class="aks-new"><span>APS</span><b style="color:var(--ok)">87%</b></div></div><div class="aks-delta up">+15%</div></div>
+          <div class="aks-card"><div class="aks-label">换模次数</div><div class="aks-vs"><div class="aks-old"><span>人工</span><b>24 次</b></div><i data-lucide="arrow-right"></i><div class="aks-new"><span>APS</span><b style="color:var(--ok)">12 次</b></div></div><div class="aks-delta up">-50%</div></div>
+          <div class="aks-card"><div class="aks-label">准时交付率</div><div class="aks-vs"><div class="aks-old"><span>人工</span><b>88%</b></div><i data-lucide="arrow-right"></i><div class="aks-new"><span>APS</span><b style="color:var(--ok)">98%</b></div></div><div class="aks-delta up">+10%</div></div>
+          <div class="aks-card"><div class="aks-label">在制品库存</div><div class="aks-vs"><div class="aks-old"><span>人工</span><b>3.8 天</b></div><i data-lucide="arrow-right"></i><div class="aks-new"><span>APS</span><b style="color:var(--ok)">2.1 天</b></div></div><div class="aks-delta up">-45%</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">人工经验排产</div><span class="status-pill warn">72% 利用率</span></div>
+            <div class="chart-box" id="chartApsManual" style="height:340px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">APS 算法排产</div><span class="status-pill ok">87% 利用率</span></div>
+            <div class="chart-box" id="chartApsAlgo" style="height:340px"></div>
+          </div>
+        </div>
+
+        <div class="card panel" style="margin-top:16px">
+          <div class="panel-head"><div class="panel-title">📈 排产算法说明</div></div>
+          <div class="aps-explainer">
+            <div class="ae-item"><div class="ae-icon" style="--c:#E8B4A0"><i data-lucide="brain"></i></div><div><b>约束规划</b><div style="font-size:11px;color:var(--text-3);margin-top:4px">机台产能 / 模具寿命 / 换模时间 / 交期优先级 4 维硬约束</div></div></div>
+            <div class="ae-item"><div class="ae-icon" style="--c:#3B82F6"><i data-lucide="git-merge"></i></div><div><b>同模合并</b><div style="font-size:11px;color:var(--text-3);margin-top:4px">同客户/同模具的相邻订单合并生产 · 减少 50% 换模</div></div></div>
+            <div class="ae-item"><div class="ae-icon" style="--c:#10B981"><i data-lucide="zap"></i></div><div><b>瓶颈机台优先</b><div style="font-size:11px;color:var(--text-3);margin-top:4px">注塑机 5 台产能按订单紧急度智能分配</div></div></div>
+            <div class="ae-item"><div class="ae-icon" style="--c:#A855F7"><i data-lucide="repeat"></i></div><div><b>滚动重排</b><div style="font-size:11px;color:var(--text-3);margin-top:4px">每 30 分钟根据实际进度自动重排</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 21: AI 质量预测 ============== -->
+      <section class="page" data-page="ai-quality">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">AI 质量预测 <span class="page-title-en">AI Quality Forecast</span></h1>
+            <p class="page-sub">基于 LSTM 的不良率预测 · 提前 6 小时预警 · 假阴性 &lt; 2%</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="refresh-cw"></i>重训模型</button>
+            <button class="btn primary"><i data-lucide="play"></i>开始预测</button>
+          </div>
+        </div>
+
+        <div class="alert-row" style="margin-bottom:16px">
+          <div class="alert-card" style="--c:#10B981"><div class="alert-icon"><i data-lucide="check-circle-2"></i></div><div><div class="alert-num">94.8%</div><div style="font-size:11px;color:var(--text-3)">预测准确率</div></div></div>
+          <div class="alert-card" style="--c:#E8B4A0"><div class="alert-icon"><i data-lucide="brain"></i></div><div><div class="alert-num">LSTM</div><div style="font-size:11px;color:var(--text-3)">3 层 · 128 单元</div></div></div>
+          <div class="alert-card" style="--c:#3B82F6"><div class="alert-icon"><i data-lucide="database"></i></div><div><div class="alert-num">12.6k</div><div style="font-size:11px;color:var(--text-3)">训练样本</div></div></div>
+          <div class="alert-card" style="--c:#F59E0B"><div class="alert-icon"><i data-lucide="alert-triangle"></i></div><div><div class="alert-num">2</div><div style="font-size:11px;color:var(--text-3)">当前预警</div></div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">不良率预测（实际 vs 预测 · 未来 6h）</div></div>
+            <div class="chart-box" id="chartAiForecast" style="height:340px"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">⚠ 当前预警</div></div>
+            <div class="ai-alert-list" id="aiAlertList"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">特征重要性</div></div>
+            <div class="chart-box" id="chartFeature" style="height:260px"></div>
+          </div>
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">模型评估指标</div></div>
+            <div class="ai-metrics" id="aiMetrics"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 22: 数字孪生样板车间 ============== -->
+      <section class="page" data-page="digital-twin">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">数字孪生车间 <span class="page-title-en">Digital Twin Workshop</span></h1>
+            <p class="page-sub">实时映射旧厂 3 万 m² · 14 台设备 OEE · 异常位置高亮 · 可下钻到机台</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="maximize-2"></i>全屏</button>
+            <button class="btn primary"><i data-lucide="crosshair"></i>定位异常</button>
+          </div>
+        </div>
+
+        <div class="dash-grid" style="margin-top:16px">
+          <div class="dash-card span-2" style="min-height:480px">
+            <div class="dash-head"><div class="dash-title">3D 车间实时孪生（鼠标拖拽旋转 · 滚轮缩放）</div><span class="dash-pill" style="--c:#10B981">14 设备在线</span></div>
+            <div id="twinBox" style="height:460px;position:relative;border-radius:var(--r-md);overflow:hidden;background:linear-gradient(180deg,#0B1220,#0F172A)"></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">设备状态</div></div>
+            <div class="twin-status" id="twinStatus"></div>
+          </div>
+        </div>
+
+        <div class="dash-grid" style="margin-top:16px">
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">异常事件（按位置）</div></div>
+            <div class="twin-events" id="twinEvents"></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">AGV 实时位置</div></div>
+            <div class="twin-agv" id="twinAgv"></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-head"><div class="dash-title">人员定位</div></div>
+            <div class="twin-people" id="twinPeople"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Page 23: 供应商协同门户 ============== -->
+      <section class="page" data-page="supplier-portal">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">供应商协同门户 <span class="page-title-en">Supplier Portal</span></h1>
+            <p class="page-sub">外网登录 · 订单/付款/对账/对票 · 海天 / 雅琪 / SK Chemicals / 巴斯夫</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn ghost"><i data-lucide="user-plus"></i>邀请新供应商</button>
+            <button class="btn primary"><i data-lucide="message-square"></i>群发通知</button>
+          </div>
+        </div>
+
+        <div class="alert-row" style="margin-bottom:16px">
+          <div class="alert-card" style="--c:#3B82F6"><div class="alert-icon"><i data-lucide="users"></i></div><div><div class="alert-num">28</div><div style="font-size:11px;color:var(--text-3)">在线供应商</div></div></div>
+          <div class="alert-card" style="--c:#10B981"><div class="alert-icon"><i data-lucide="package"></i></div><div><div class="alert-num">156</div><div style="font-size:11px;color:var(--text-3)">在执行采购单</div></div></div>
+          <div class="alert-card" style="--c:#F59E0B"><div class="alert-icon"><i data-lucide="clock"></i></div><div><div class="alert-num">3</div><div style="font-size:11px;color:var(--text-3)">逾期未发</div></div></div>
+          <div class="alert-card" style="--c:#E8B4A0"><div class="alert-icon"><i data-lucide="circle-dollar-sign"></i></div><div><div class="alert-num">¥428</div><div style="font-size:11px;color:var(--text-3)">应付账款 (万)</div></div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">采购订单列表</div><span class="panel-sub">按供应商分组</span></div>
+            <div class="sup-order-list" id="supOrderList"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head"><div class="panel-title">对账 & 付款</div></div>
+            <div class="sup-recon" id="supRecon"></div>
+          </div>
+        </div>
+
+        <div class="card panel" style="margin-top:16px">
+          <div class="panel-head"><div class="panel-title">供应商绩效雷达</div></div>
+          <div class="chart-box" id="chartSupRadar" style="height:300px"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Footer ERP switch hint -->
+    <div class="erp-hint" id="erpHint">
+      <i data-lucide="info"></i>
+      <span>当前为 <b>对接 ERP</b> 模式（演示用） · 自研时可一键接管主数据与业务流程</span>
+      <label class="erp-switch mini">
+        <input type="checkbox" id="erpSwitchFoot" checked />
+        <span class="erp-slider"></span>
+      </label>
+    </div>
+  </main>
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-host" id="toastHost"></div>
+
+<script src="mock.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

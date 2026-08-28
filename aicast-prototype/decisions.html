@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日决策面板 · AICast</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="decisions">
+
+<main class="content">
+  <div class="crumb"><a href="index.html">工作台</a><span class="sep">/</span><span>每日决策面板</span></div>
+
+  <!-- 顶部概览 -->
+  <div class="card rv d1" style="margin-bottom:16px;">
+    <div class="grid g3">
+      <div class="stat"><span class="s-label">今日建议选题</span><span class="s-value mono" id="de-count">—</span><span class="s-note">由数据回流生成</span></div>
+      <div class="stat"><span class="s-label">高潜复用</span><span class="s-value cy mono" id="de-high">—</span><span class="s-trend up">依据完播&gt;8%</span></div>
+      <div class="stat"><span class="s-label">含风险项</span><span class="s-value amber mono" id="de-risk">—</span><span class="s-note">需人工确认才执行</span></div>
+    </div>
+  </div>
+
+  <div class="grid gl-r" style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start;">
+    <!-- 决策清单 -->
+    <div class="card rv d2">
+      <div class="card-head">
+        <div><div class="card-title">今日建议明细</div><div class="card-sub">AI 给建议，你来做决定 · 系统默认不选「含风险」项</div></div>
+        <span class="tag outline" id="sel-tag">已选 0</span>
+      </div>
+      <div id="dec-list"></div>
+      <div style="margin-top:16px;" class="row2">
+        <button class="btn btn-primary btn-lg" id="de-confirm">确认并生成这 N 条</button>
+        <button class="btn btn-ghost" id="de-skip">跳过今天</button>
+      </div>
+    </div>
+
+    <!-- 决策依据 -->
+    <div class="card rv d3">
+      <div class="card-head"><span class="card-title">为什么是这些</span><span class="tag cyan">人机分界</span></div>
+      <p class="small muted" style="margin-bottom:14px">系统只负责从「数据回流」归纳出候选与依据；是否发布、命中什么风险，由运营拍板。这样避免 AI 全自动乱发导致的封号与售后纠纷。</p>
+      <ul id="de-why" style="list-style:none;"></ul>
+    </div>
+  </div>
+</main>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+(function () {
+  var rows = [];
+  var sel = {};
+
+  function rankBadge(r) {
+    var colors = ['#38bdf8', '#22d3ee', '#7fd48f', '#fbbf24'];
+    return '<span style="width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;font-weight:700;background:' + (rows[r - 1] && rows[r - 1].risk ? 'var(--warning-soft);color:var(--warning)' : 'var(--accent-soft);color:var(--accent)') + '">' + r + '</span>';
+  }
+  function renderTag(d) {
+    var cls = d.risk ? 'amber' : (d.positive ? 'green' : 'gray');
+    return '<span class="tag ' + cls + '">' + d.tag + '</span>' + (d.risk ? ' <span class="tag outline small">有风险·需人工</span>' : '');
+  }
+
+  function updateSel() {
+    var n = Object.keys(sel).filter(function (k) { return sel[k]; }).length;
+    document.getElementById('sel-tag').textContent = '已选 ' + n;
+    var b = document.getElementById('de-confirm');
+    b.textContent = '确认并生成这 ' + n + ' 条';
+    b.disabled = n === 0;
+  }
+
+  api.fetchDecisions().then(function (list) {
+    rows = list;
+    var el = document.getElementById('dec-list');
+    el.innerHTML = list.map(function (d) {
+      var checked = !d.risk; // 有风险默认不勾
+      sel[d.id] = checked;
+      return '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:var(--panel)">' +
+        '<div class="row2" style="justify-content:space-between;gap:12px">' +
+        '<div style="display:flex;gap:12px;align-items:flex-start">' +
+        '<span style="margin-top:2px">' + rankBadge(d.rank) + '</span>' +
+        '<div><div style="font-weight:600;font-size:var(--t1)">' + d.title + '</div>' +
+        '<div class="small muted" style="margin-top:4px">依据：' + d.basis + '</div>' +
+        '<div style="margin-top:8px">' + renderTag(d) + '</div></div></div>' +
+        '<input type="checkbox" class="ck" data-id="' + d.id + '"' + (checked ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--accent)"></div></div>';
+    }).join('');
+
+    document.getElementById('de-count').textContent = list.length;
+    document.getElementById('de-high').textContent = list.filter(function (d) { return d.positive; }).length;
+    document.getElementById('de-risk').textContent = list.filter(function (d) { return d.risk; }).length;
+    updateSel();
+
+    el.querySelectorAll('.ck').forEach(function (ck) {
+      ck.onchange = function () {
+        var id = ck.dataset.id;
+        sel[id] = ck.checked;
+        if (ck.checked) {
+          var d = rows.find(function (x) { return x.id === id; });
+          if (d && d.risk) window.UI.toast('已勾选含风险项「' + d.title + '」，需人工确认后执行', 'err');
+        }
+        updateSel();
+      };
+    });
+  });
+
+  // 决策依据
+  var whys = [
+    '建议来自上一周期 4D 归因，「人均30」标签完播 9% 居首。',
+    '低效标签优先给出「改标题 / 迁移时段」的复测方向，而非直接淘汰。',
+    '有风险项默认不勾选，强制保留一道人工闸门。'
+  ];
+  document.getElementById('de-why').innerHTML = whys.map(function (w, i) {
+    return '<li style="padding:9px 10px;margin-bottom:8px;border-left:2px solid var(--accent);background:var(--panel);border-radius:8px;font-size:var(--t-1)">' + (i + 1) + '. ' + w + '</li>';
+  }).join('');
+
+  // 确认
+  document.getElementById('de-confirm').addEventListener('click', function () {
+    var ids = Object.keys(sel).filter(function (k) { return sel[k]; });
+    var b = this; b.classList.add('is-loading');
+    api.confirmDecisions(ids).then(function () {
+      b.classList.remove('is-loading');
+      b.textContent = '已生成 ✓'; b.disabled = true;
+      window.UI.toast('已确认 ' + ids.length + ' 条建议，交付内容生成台执行', 'ok');
+    });
+  });
+  document.getElementById('de-skip').onclick = function () {
+    window.UI.toast('已跳过今日建议（仍保留在建议池，可稍后查看）', 'info');
+  };
+})();
+</script>
+</body>
+</html>

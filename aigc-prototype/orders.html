@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打样 / 采购订单 · AIGC 包材平台</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== 汇总卡 ===== */
+  .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;}
+  @media (max-width:720px){.sum-grid{grid-template-columns:1fr 1fr;}}
+  .sum-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:18px 18px;box-shadow:var(--shadow-sm);}
+  .sum-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;flex:none;}
+  .sum-card .lab{font-size:12.5px;color:var(--text-sub);display:flex;align-items:center;gap:6px;}
+  .sum-card .val{font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.2;}
+  .sum-card .sub{font-size:11.5px;color:var(--text-sub);margin-top:2px;}
+
+  /* ===== Tabs ===== */
+  .order-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .order-tabs button{border:1px solid var(--border);background:var(--surface);color:var(--text-sub);
+    padding:7px 16px;border-radius:999px;font-size:13.5px;font-weight:600;transition:.15s;}
+  .order-tabs button:hover{color:var(--text);border-color:var(--border-strong);}
+  .order-tabs button.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:var(--shadow-sm);}
+  .order-tabs .cnt{font-family:var(--font-mono);font-size:11px;opacity:.7;margin-left:3px;}
+
+  /* ===== 表格增强 ===== */
+  .od-row{cursor:pointer;}
+  .od-row td:first-child .idbox{display:inline-flex;align-items:center;gap:7px;}
+  .od-row td:first-child .chev{opacity:0;transition:.15s;color:var(--primary);display:inline-flex;}
+  .od-row:hover td:first-child .chev{opacity:1;}
+  .od-row td{border-bottom-width:1px;}
+  .qty-cell{font-family:var(--font-mono);font-size:12.5px;}
+  .am-cell{font-family:var(--font-mono);font-size:13px;font-weight:600;white-space:nowrap;}
+  .date-cell{font-family:var(--font-mono);font-size:12px;color:var(--text-sub);white-space:nowrap;}
+  .act-cell{white-space:nowrap;}
+  .act-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface);
+    color:var(--text-sub);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;transition:.15s;}
+  .act-btn:hover{color:var(--primary);border-color:var(--primary);background:var(--primary-tint);}
+  .act-btn.active{color:var(--primary);border-color:var(--primary);background:var(--primary-tint);}
+
+  /* 展开行 */
+  tr.detail-row{display:none;}
+  tr.detail-row.open{display:table-row;}
+  tr.detail-row>td{background:#FBF8F2;border-bottom:1px solid var(--border);padding:16px 20px;}
+  .detail-inner{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  @media (max-width:760px){.detail-inner{grid-template-columns:1fr;}}
+  .dtl-head{margin-bottom:12px;}
+  .dtl-head b{font-family:var(--font-display);font-size:15px;}
+  .dtl-head small{color:var(--text-sub);font-size:12px;margin-left:8px;}
+  .dtl-meta{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--text-sub);margin-bottom:14px;}
+  .dtl-meta b{color:var(--text);font-weight:600;}
+  .dtl-foot{border-top:1px dashed var(--border-strong);padding-top:12px;font-size:12px;color:var(--text-sub);line-height:1.8;}
+
+  /* timeline 状态增强 */
+  .tl li{opacity:.55;}
+  .tl li.done{opacity:1;}
+  .tl li.done::before{background:var(--success);}
+  .tl li.current{opacity:1;}
+  .tl li.current::before{background:var(--primary);box-shadow:0 0 0 4px rgba(201,87,47,.16);}
+  .tl li.current b{color:var(--primary);}
+  .tl .st-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--primary);
+    background:var(--primary-tint);border-radius:999px;padding:1px 8px;margin-left:8px;}
+  .tl li.done .st-tag{display:none;}
+</style>
+</head>
+<body data-page="orders" data-title="打样 / 订单">
+
+<main class="content">
+  <!-- 页头 -->
+  <div class="page-head" data-reveal>
+    <div>
+      <h1>打样 / 采购订单</h1>
+      <p>跟踪实体打样与备料采购的流转进度，一键发起打样申请并直达供应商。</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" data-open-modal="sampleModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="flex:none"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      <span>发起实体打样</span>
+    </button>
+  </div>
+
+  <!-- 汇总卡 -->
+  <div class="sum-grid">
+    <div class="sum-card" data-reveal style="animation-delay:.03s">
+      <div class="sum-ic" style="background:var(--warning)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+      <div>
+        <div class="lab">待打样（待启动）</div>
+        <div class="val" id="kPending">–</div>
+        <div class="sub">存在样单已排期，等待打样排产</div>
+      </div>
+    </div>
+    <div class="sum-card" data-reveal style="animation-delay:.06s">
+      <div class="sum-ic" style="background:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+      <div>
+        <div class="lab">生产中（打样 / 采购）</div>
+        <div class="val" id="kProducing">–</div>
+        <div class="sub">产线在制订单，含在制进度</div>
+      </div>
+    </div>
+    <div class="sum-card" data-reveal style="animation-delay:.09s">
+      <div class="sum-ic" style="background:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div>
+        <div class="lab">本月成交额</div>
+        <div class="val" id="kRevenue">–</div>
+        <div class="sub">已发货 / 已完成的采购金额</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="order-tabs" data-reveal style="animation-delay:.12s">
+    <button data-tab="打样" class="active">打样<span class="cnt" id="cnt-dy">0</span></button>
+    <button data-tab="采购">采购<span class="cnt" id="cnt-cg">0</span></button>
+    <button data-tab="全部">全部<span class="cnt" id="cnt-all">0</span></button>
+  </div>
+
+  <!-- 表格 -->
+  <div class="table-wrap" data-reveal style="animation-delay:.15s">
+    <div id="ordersBody">
+    <table>
+      <thead>
+        <tr>
+          <th>订单号</th><th>类型</th><th>瓶型</th><th>客户</th><th>数量</th>
+          <th>金额</th><th>供应商</th><th>日期</th><th>状态</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody"></tbody>
+    </table>
+    </div>
+  </div>
+</main>
+
+<!-- 发起实体打样模态框 -->
+<div class="modal-mask" id="sampleModal">
+  <div class="modal">
+    <div class="card-h" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div><div class="card-t">发起实体打样</div><div class="card-sub">提交后将创建样单，直达供应商排产</div></div>
+      <button class="tbar-btn" data-closemodal title="关闭" style="width:34px;height:34px;position:static">✕</button>
+    </div>
+    <div class="field"><label>瓶型</label>
+      <select id="smp-bottle"></select>
+    </div>
+    <div class="field"><label>数量</label>
+      <input type="number" id="smp-qty" value="5" min="1" max="20" placeholder="打样套数">
+    </div>
+    <div class="field"><label>备注（工艺 / 颜色 / 贴标要求）</label>
+      <textarea id="smp-note" rows="3" placeholder="例如：瓶身局部烫金，距瓶底 12mm；配哑光乳白盖。"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;">
+      <button class="btn ghost" data-closemodal>取消</button>
+      <button class="btn primary" id="smp-submit">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+(function(){
+  var ORDERS = [];
+  var curTab = '打样';
+  var openId = null;
+
+  var STATUS_TAG = { '待打样':'amber', '打样中':'teal', '生产中':'primary', '已发货':'gray', '已完成':'green' };
+  var STEPS = ['申请受理','报价确认','打样／生产','质检发货','签收完成'];
+  var CURSTEP = { '待打样':0, '打样中':1, '生产中':2, '已发货':3, '已完成':4 };
+
+  /* 瓶型下拉（来自资产库） */
+  var sel = document.getElementById('smp-bottle');
+  DB.assets.forEach(function(a){
+    var o=document.createElement('option');
+    o.value=a.id; o.textContent=a.id+' — '+a.name+'（'+a.supplier+'）';
+    sel.appendChild(o);
+  });
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(n){ return '¥'+Number(n).toLocaleString('zh-CN'); }
+
+  /* timeline steps for a status */
+  function stepsHtml(status){
+    var cur = CURSTEP[status]; // -1 means all done when undefined->handled below
+    return STEPS.map(function(s,i){
+      var cls='';
+      if(cur===4) cls='done';                 // 已完成：全部完成
+      else if(i<cur+1 && status!=='待打样') cls='done';
+      else if(i===cur+1) cls='current';
+      if(status==='待打样'){ if(i===0) cls='done'; else if(i===1) cls='current'; }
+      var mark = cls==='current' ? '<span class="st-tag">进行中</span>' : '';
+      return '<li class="'+cls+'"><b>'+s+'</b><div class="meta">'+(cls==='done'?'已完成':'')+
+             (cls==='current'?'推进中 / 预计 3-5 工作日':'')+(cls===''?'待推进':'')+'</div>'+mark+'</li>';
+    }).join('');
+  }
+
+  function detailHtml(o){
+    var sup=(DB.suppliers.find(function(s){return s.name===o.supplier;})||{});
+    return '<div class="dtl-head"><b>'+esc(o.id)+' 流转记录</b><small>'+esc(o.bottle)+'</small></div>'
+      +'<div class="dtl-meta">'
+        +'<span>客户 <b>'+esc(o.customer)+'</b></span>'
+        +'<span>数量 <b>'+esc(o.qty)+'</b></span>'
+        +'<span>金额 <b>'+fmt(o.amount)+'</b></span>'
+        +'<span>下单 <b>'+esc(o.date)+'</b></span>'
+      +'</div>'
+      +'<ul class="tl">'+stepsHtml(o.status)+'</ul>'
+      +'<div class="dtl-foot">供应商：'+esc(o.supplier)+'（'+(sup.region||'—')+'）· 数字资产 '+(sup.digital||0)+' 个 · '
+      +'当前节点：<span class="tag '+(STATUS_TAG[o.status]||'gray')+'">'+esc(o.status)+'</span></div>';
+  }
+
+  function summary(){
+    var pending=0, prod=0, rev=0;
+    ORDERS.forEach(function(o){
+      if(o.status==='待打样') pending++;
+      if(o.status==='生产中'||o.status==='打样中') prod++;
+      if(o.type==='采购' && (o.status==='已发货'||o.status==='已完成')) rev += Number(o.amount)||0;
+    });
+    document.getElementById('kPending').textContent = pending;
+    document.getElementById('kProducing').textContent = prod;
+    document.getElementById('kRevenue').textContent = '¥'+rev.toLocaleString('zh-CN');
+    document.getElementById('cnt-dy').textContent = ORDERS.filter(function(o){return o.type==='打样';}).length;
+    document.getElementById('cnt-cg').textContent = ORDERS.filter(function(o){return o.type==='采购';}).length;
+    document.getElementById('cnt-all').textContent = ORDERS.length;
+  }
+
+  function render(open){
+    var list = curTab==='全部' ? ORDERS.slice() : ORDERS.filter(function(o){return o.type===curTab;});
+    var tbody = document.getElementById('ordersTbody');
+    tbody.innerHTML = list.map(function(o){
+      var isOpen = open===o.id;
+      return '<tr class="od-row" data-id="'+o.id+'">'
+        +'<td><span class="idbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" class="chev" style="transform:rotate('+(isOpen?90:0)+'deg)"><path d="m9 18 6-6-6-6"/></svg>'+esc(o.id)+'</span></td>'
+        +'<td><span class="tag '+(o.type==='采购'?'teal':'amber')+'">'+esc(o.type)+'</span></td>'
+        +'<td style="font-weight:600">'+esc(o.bottle)+'</td>'
+        +'<td>'+esc(o.customer)+'</td>'
+        +'<td class="qty-cell">'+esc(o.qty)+'</td>'
+        +'<td class="am-cell">'+fmt(o.amount)+'</td>'
+        +'<td class="muted" style="font-size:12.5px">'+esc(o.supplier)+'</td>'
+        +'<td class="date-cell">'+esc(o.date)+'</td>'
+        +'<td><span class="tag '+(STATUS_TAG[o.status]||'gray')+'">'+esc(o.status)+'</span></td>'
+        +'<td class="act-cell"><button class="act-btn'+(isOpen?' active':'')+'" data-open="'+o.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="flex:none"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>进度</button></td>'
+      +'</tr>'
+      +'<tr class="detail-row'+(isOpen?' open':'')+'" data-detail="'+o.id+'"><td colspan="10"><div class="detail-inner">'
+        +'<div>'+detailHtml(o)+'</div>'
+        +'<div class="dtl-notes"><div class="dtl-head"><b>业务备注</b></div><div class="dtl-foot">'
+          +'该订单由 Pack·AI 提案流转生成。如需改单 / 追加快递、变更工艺或联系供应商询价，可在工作台「提案」页再次编辑后重新生成订单。'
+          +(o.type==='打样' ? '打样样单通常 3 个工作日内出样，样品确认后将自动生成采购合同供审。' : '采购单已进入备料流程，实际交期以供应商回执为准。')
+        +'</div></div>'
+      +'</div></td></tr>';
+    }).join('');
+  }
+
+  /* 行点击 + 操作按钮 */
+  document.getElementById('ordersTbody').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-open]');
+    if(btn){ e.preventDefault(); toggleDetail(btn.getAttribute('data-open')); return; }
+    var row = e.target.closest('.od-row');
+    if(row) toggleDetail(row.getAttribute('data-id'));
+  });
+  function toggleDetail(id){
+    openId = (openId===id) ? null : id;
+    render(openId);
+  }
+
+  /* Tabs */
+  [].forEach.call(document.querySelectorAll('.order-tabs button'), function(b){
+    b.addEventListener('click', function(){
+      curTab = b.getAttribute('data-tab');
+      openId = null;
+      [].forEach.call(document.querySelectorAll('.order-tabs button'),function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      render(null);
+    });
+  });
+
+  /* 发起实体打样提交 */
+  document.getElementById('smp-submit').addEventListener('click', function(){
+    var btn=this; btn.disabled=true; btn.textContent='提交中…';
+    var payload = {
+      bottle: sel.value,
+      qty: document.getElementById('smp-qty').value,
+      note: document.getElementById('smp-note').value
+    };
+    api.requestSample(payload).then(function(r){
+      var orderId = r.data.orderId;
+      var asset = DB.assets.find(function(a){return a.id===sel.value;}) || DB.assets[0];
+      var row = {
+        id: orderId, type:'打样', bottle: asset.name, customer:'待确认', qty: payload.qty+' 套',
+        amount: 980, status:'待打样', date: new Date().toISOString().slice(0,10), supplier: asset.supplier
+      };
+      ORDERS.unshift(row);
+      curTab='打样';
+      [].forEach.call(document.querySelectorAll('.order-tabs button'),function(x){x.classList.remove('active');});
+      document.querySelector('.order-tabs button[data-tab="打样"]').classList.add('active');
+      window.closeModal('sampleModal');
+      toast('打样申请已提交，订单号 '+orderId+'，已进入待打样队列');
+      summary(); render(openId=orderId);
+      btn.disabled=false; btn.textContent='提交申请';
+      document.getElementById('smp-note').value='';
+    }).catch(function(){
+      btn.disabled=false; btn.textContent='提交申请';
+      toast('提交失败，请重试','err');
+    });
+  });
+
+  /* 载入数据 */
+  api.getOrders().then(function(r){
+    ORDERS = r.data;
+    summary();
+    render(null);
+  });
+})();
+</script>
+</body>
+</html>

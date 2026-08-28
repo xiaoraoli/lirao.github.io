@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIGC 包材平台 · 工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="dashboard" data-title="工作台">
+<main class="content">
+  <div class="page-head" data-reveal>
+    <div><p class="muted" style="margin:0 0 2px">早上好，孟晓慧</p><h1>工作台</h1>
+    <p>「渲染即报价 · 图即订单」——今天已有 <b class="mono">18</b> 份提案在流转。</p></div>
+    <div class="spacer"></div>
+    <a class="btn ghost" href="library.html">选型资产库</a>
+    <a class="btn primary" href="editor.html">+ 新建设计</a>
+  </div>
+
+  <!-- 4 KPI -->
+  <div class="grid cols-4" data-reveal style="animation-delay:.06s">
+    <div class="card"><div class="kpi"><span class="label">今日提案</span><span class="val" id="kProposals">–</span><span class="delta">▲ 8 较昨日</span></div></div>
+    <div class="card"><div class="kpi"><span class="label">H5 打开 / 上周</span><span class="val" id="kViews">–</span><span class="delta">▲ 24%</span></div></div>
+    <div class="card"><div class="kpi"><span class="label">询价转化率</span><span class="val" id="kConv">–</span><span class="delta" id="kConvDelta">▲ 3.2%</span></div></div>
+    <div class="card"><div class="kpi"><span class="label">待处理打样</span><span class="val" id="kPending">–</span><span class="delta down">◆ 7 需跟进</span></div></div>
+  </div>
+
+  <div class="grid cols-2" data-reveal style="animation-delay:.12s;margin-top:18px">
+    <!-- 近期项目 -->
+    <div class="card">
+      <div class="card-h"><div><div class="card-t">近期项目</div><div class="card-sub">最近编辑的 4 个提案工作</div></div><div class="spacer" style="flex:1"></div><a class="mono muted" href="proposal.html">全部 →</a></div>
+      <div id="projList"></div>
+    </div>
+    <!-- 待办 -->
+    <div class="card">
+      <div class="card-h"><div><div class="card-t">待办事项</div><div class="card-sub">报价 / 打样 跟进漏斗</div></div></div>
+      <div id="todoList"></div>
+    </div>
+  </div>
+
+  <div class="grid cols-3" data-reveal style="animation-delay:.18s;margin-top:18px">
+    <!-- 资产采用趋势 -->
+    <div class="card">
+      <div class="card-h"><div><div class="card-t">资产采用趋势</div><div class="card-sub">30 天 · AIGC 提案选用</div></div></div>
+      <div class="bar-wrap" id="barWrap"></div>
+    </div>
+    <!-- 快捷入口 -->
+    <div class="card">
+      <div class="card-h"><div><div class="card-t">快捷入口</div></div></div>
+      <div class="grid cols-2" style="gap:10px">
+        <a class="card clickable" style="padding:14px" href="ai.html"><div><b>AI 灵感</b><p class="muted" style="font-size:12px;margin:4px 0 0">文生/图生 → 落真实模具</p></div></a>
+        <a class="card clickable" style="padding:14px" href="editor.html"><div><b>虚拟打样</b><p class="muted" style="font-size:12px;margin:4px 0 0">换色换工艺 · 秒级渲染</p></div></a>
+        <a class="card clickable" style="padding:14px" href="proposal.html"><div><b>生成提案</b><p class="muted" style="font-size:12px;margin:4px 0 0">H5 / PDF / 3D 视频</p></div></a>
+        <a class="card clickable" style="padding:14px" href="orders.html"><div><b>申请打样</b><p class="muted" style="font-size:12px;margin:4px 0 0">对接真实供应链</p></div></a>
+      </div>
+    </div>
+    <!-- 供应商资产数字化 -->
+    <div class="card">
+      <div class="card-h"><div><div class="card-t">供应商资产数字化</div><div class="card-sub">模具入库进度</div></div></div>
+      <div id="supList"></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components.js"></script>
+<script>
+(function(){
+  api.getKpis().then(function(r){
+    var d=r.data;
+    document.getElementById('kProposals').textContent=d.proposalsToday;
+    document.getElementById('kViews').textContent=d.viewsWeek;
+    document.getElementById('kConv').textContent=d.conversion+'%';
+    document.getElementById('kPending').textContent=d.pendingApprovals;
+  });
+  function entropy(s){return Array.prototype.reduce.call(s,function(a,c){return (a*131 + c.charCodeAt(0))%1e6;},7)||1;}
+
+  var proj=document.getElementById('projList');
+  DB.projects.forEach(function(p){
+    var tag='<span class="tag '+({'提案中':'primary','待打样':'amber','询价中':'teal'}[p.status]||'gray')+'">'+p.status+'</span>';
+    var b=DB.assets.find(function(a){return a.id===p.bottle;})||{color:'#b98a72',name:''};
+    var d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);';
+    d.innerHTML='<div style="width:38px;height:38px;border-radius:10px;background:'+b.color+';flex:none;box-shadow:inset 0 0 0 2px rgba(0,0,0,.06)"></div>'
+      +'<div style="flex:1"><b style="font-size:13.5px">'+p.name+'</b><div class="muted" style="font-size:12px">'+p.customer+' · '+b.name+'</div></div>'
+      +'<div style="text-align:right"><span style="display:block;margin-bottom:4px">'+tag+'</span><span class="mono muted" style="font-size:11px">'+p.updated+'</span></div>';
+    d.style.cursor='pointer'; d.addEventListener('click',function(){location.href='editor.html';});
+    proj.appendChild(d);
+  });
+
+  var todos=[['杭州「初雾」报价待确认','报价','amber',2.14],['青黛堂乳霜罐实体打样','打样','teal',null],['FLEUR 口红管工艺核对','询价','primary',null],['月初模具入库 12 款','入库','gray',null]];
+  var todo=document.getElementById('todoList');
+  todos.forEach(function(t){
+    var d=document.createElement('div'); d.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);';
+    d.innerHTML='<div style="flex:1"><b style="font-size:13px">'+t[0]+'</b><div class="muted" style="font-size:12px">'+(t[3]?'参考单价 ¥'+t[3]:'需人工确认')+'</div></div><span class="tag '+({'amber':'amber','teal':'teal','primary':'primary','gray':'gray'}[t[2]])+'">'+t[1]+'</span>';
+    todo.appendChild(d);
+  });
+
+  var bars=[['08-10',42],['08-12',58],['08-14',47],['08-16',71],['08-18',66],['08-20',82],['08-22',95],['08-24',104],['08-26',88]];
+  var bw=document.getElementById('barWrap'); var max=110;
+  var grid='<div style="display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:8px">';
+  bars.forEach(function(b){ grid+='<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;text-align:center;gap:6px">'
+    +'<span class="mono" style="font-size:10.5px;color:var(--primary)">'+b[1]+'</span><div style="height:'+(b[1]/max*110)+'px;background:linear-gradient(180deg,var(--primary),var(--accent2));border-radius:6px 6px 2px 2px"></div>'
+    +'<span class="mono" style="font-size:10px;color:var(--text-sub)">'+b[0]+'</span></div>';});
+  grid+='</div>';
+  bw.innerHTML=grid;
+
+  var sup=document.getElementById('supList');
+  DB.suppliers.forEach(function(s){
+    var d=document.createElement('div'); d.style.cssText='padding:10px 0;border-bottom:1px solid var(--border);';
+    d.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:7px"><b style="font-size:13px">'+s.name+'</b><span class="mono muted" style="font-size:11px">入库 '+s.digital+'%</span></div>'
+      +'<div class="progress"><i style="width:'+s.digital+'%"></i></div>';
+    sup.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

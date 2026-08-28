@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据回流看板 · AICast</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="analytics">
+
+<main class="content">
+  <div class="crumb"><a href="index.html">工作台</a><span class="sep">/</span><span>数据回流看板</span></div>
+
+  <div class="grid g4">
+    <div class="card rv d1"><div class="stat"><span class="s-label">近 7 日总播放</span><span class="s-value cy mono" id="an-views">—</span><span class="s-trend up">▲ 12% 环比</span></div></div>
+    <div class="card rv d2"><div class="stat"><span class="s-label">平均完播率</span><span class="s-value mono" id="an-watch">—</span><span class="s-note">行业基准约 5%</span></div></div>
+    <div class="card rv d3"><div class="stat"><span class="s-label">高潜标签</span><span class="s-value hot mono" id="an-high">—</span><span class="s-note">可直接复用</span></div></div>
+    <div class="card rv d4"><div class="stat"><span class="s-label">采纳回灌建议</span><span class="s-value amber mono">8 / 12</span><span class="s-note">复测提升 1.4×</span></div></div>
+  </div>
+
+  <div class="grid gl-r" style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;margin-top:24px;align-items:start;">
+    <!-- 4D 归因表 -->
+    <div class="card rv d2">
+      <div class="card-head">
+        <div><div class="card-title">4D 归因明细</div><div class="card-sub">内容 × 账号 × 时段 × 标题 · 每 10 分钟更新</div></div>
+        <div class="seg"><button class="on">近 7 日</button><button>近 30 日</button></div>
+      </div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>归因标签</th><th>维度</th><th>平台</th><th>播放</th><th>完播</th><th>核心词</th><th>评级</th></tr></thead>
+        <tbody id="an-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- 回流结论 -->
+    <div>
+      <div class="card rv d3">
+        <div class="card-head"><span class="card-title">回流结论</span><span class="tag cyan">可执行</span></div>
+        <ul id="an-concl" style="list-style:none;"></ul>
+        <button class="btn btn-primary btn-block" style="margin-top:14px" id="an-feed">回灌到内容生成台</button>
+      </div>
+      <div class="card rv d4" style="margin-top:16px">
+        <div class="card-head"><span class="card-title">高潜 / 低效分布</span></div>
+        <div id="an-dist"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+(function () {
+  function gradeTag(g) {
+    return g === 'high' ? '<span class="tag green">高潜</span>' : g === 'mid' ? '<span class="tag amber">普通</span>' : '<span class="tag gray">低效</span>';
+  }
+  api.fetchAnalytics().then(function (rows) {
+    // 汇总
+    var total = rows.reduce(function (s, r) { return s + parseFloat(r.views); }, 0);
+    var wat = rows.reduce(function (s, r) { return s + parseFloat(r.watch); }, 0) / rows.length;
+    var hi = rows.filter(function (r) { return r.grade === 'high'; }).length;
+    document.getElementById('an-views').textContent = total.toFixed(1) + 'w';
+    document.getElementById('an-watch').textContent = wat.toFixed(1) + '%';
+    document.getElementById('an-high').textContent = hi + ' 个';
+
+    // 表格
+    document.getElementById('an-body').innerHTML = rows.map(function (r) {
+      return '<tr>' +
+        '<td><div class="cell-title"><span class="mini">↺</span><div><div>' + r.labelTag + '</div></div></div></td>' +
+        '<td class="muted">' + r.dimensions + '</td>' +
+        '<td>' + r.platform + '</td>' +
+        '<td class="mono">' + r.views + '</td>' +
+        '<td class="mono">' + r.watch + '</td>' +
+        '<td>' + r.word + '</td>' +
+        '<td>' + gradeTag(r.grade) + '</td></tr>';
+    }).join('');
+
+    // 回流结论
+    var concl = [
+      '标题含「人均30」在抖音午档 12:30 高潜，建议复用同款并追加一批。',
+      '深夜档 23:00 完播率最高（11%），下一波晚档优先排入深夜时段。',
+      '「免单暗号」播放偏低，剔除标题弱话术，改 3 组标题 A/B 复测。'
+    ];
+    document.getElementById('an-concl').innerHTML = concl.map(function (c, i) {
+      return '<li style="padding:9px 10px;margin-bottom:8px;border-left:2px solid var(--accent);background:var(--panel);border-radius:8px;font-size:var(--t-1)">' + (i + 1) + '. ' + c + '</li>';
+    }).join('');
+
+    // 分布
+    var hiN = hi, loN = rows.filter(function (r) { return r.grade === 'low'; }).length, midN = rows.length - hiN - loN;
+    var max = rows.length;
+    function bar(n, label, cls) {
+      return '<div style="margin-bottom:10px"><div class="row2"><span class="small" style="width:52px">' + label + '</span>' +
+        '<div class="pbar ' + cls + '" style="flex:1"><i style="width:' + (n / max * 100) + '%"></i></div><span class="mono small faint">' + n + '</span></div></div>';
+    }
+    document.getElementById('an-dist').innerHTML = bar(hiN, '高潜', 'g') + bar(midN, '普通', 'a') + bar(loN, '低效', 'r');
+  });
+
+  document.getElementById('an-feed').onclick = function () {
+    var b = this; b.textContent = '已回灌 ✓'; b.disabled = true;
+    window.UI.toast('4D 归因结论已写回生成台「回灌建议」', 'ok');
+  };
+})();
+</script>
+</body>
+</html>

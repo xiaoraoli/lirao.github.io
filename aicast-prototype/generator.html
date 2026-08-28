@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容生成台 · AICast</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="generator">
+
+<main class="content">
+  <div class="crumb"><a href="index.html">工作台</a><span class="sep">/</span><span>内容生成台</span></div>
+
+  <div class="toolbar rv d1">
+    <div class="seg" id="gen-tpl">
+      <button class="on" data-tpl="探店口播">探店口播</button>
+      <button data-tpl="商品种草">商品种草</button>
+      <button data-tpl="团购优惠">团购优惠</button>
+    </div>
+    <div class="grow"></div>
+    <button class="btn btn-ghost btn-sm" id="btn-fbtag" type="button">查看回灌建议</button>
+    <button class="btn btn-ghost btn-sm" id="btn-params" type="button">生成参数</button>
+  </div>
+
+  <div class="grid gl-r" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start;">
+    <!-- 左侧：预览区 -->
+    <div>
+      <!-- 生成控制 -->
+      <div class="card rv d1">
+        <div class="card-head"><span class="card-title">导入原料生成</span><span class="tag cyan">AI</span></div>
+        <div class="row2">
+          <input class="input" style="flex:1;min-width:220px;" id="gen-input" value="https://dpurl.cn/shop/1145 · 杨记川菜 招牌毛肚" placeholder="粘贴商品链接或输入主题">
+          <button class="btn btn-primary" id="gen-btn" type="button">AI 生成</button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <span class="small faint">本轮生成变体：</span><span class="tag outline">10 条</span>
+          <span class="small faint">画质</span><span class="tag outline">720P</span>
+          <span class="small faint">自动字幕</span><span class="switch on" id="sw-cc" title="切换字幕"></span>
+        </div>
+      </div>
+
+      <!-- 预览成品 -->
+      <div class="card rv d2" style="margin-top:16px;">
+        <div class="card-head"><span class="card-title">12:9 成品预览</span><span class="tag gray" id="pv-state">草稿</span></div>
+        <div class="gl-pv" style="display:grid;grid-template-columns:168px 1fr;gap:18px;align-items:stretch;">
+          <div style="aspect-ratio:9/16;border-radius:14px;background:repeating-conic-gradient(#1a2944 0% 25%,#0d1526 0% 50%);background-size:14px 14px;border:1px solid var(--border);display:grid;place-items:center;color:var(--text-faint);font-size:12px;">封面 9:16</div>
+          <div>
+            <div id="pv-scripts">
+              <div class="skel" style="width:60%;margin-bottom:8px;"></div>
+              <div class="skel" style="width:100%;margin-bottom:8px;"></div>
+              <div class="skel" style="width:82%;margin-bottom:8px;"></div>
+            </div>
+            <div class="row2" style="margin-top:14px;gap:10px;" id="pv-meta">
+              <span class="tag gray">时长 —</span><span class="tag gray">配音 待生成</span><span class="tag gray">字幕 开</span><span class="tag gray">封面 待生成</span>
+            </div>
+            <div class="row2" style="margin-top:16px;">
+              <button class="btn btn-ghost btn-sm" type="button" id="btn-cc">合成字幕配音</button>
+              <button class="btn btn-ghost btn-sm" type="button">存为草稿</button>
+              <button class="btn btn-primary btn-sm" type="button" id="btn-toqueue">加入待审队列</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：批次变体 -->
+    <div class="card rv d3">
+      <div class="card-head"><span class="card-title">本批变体</span><span class="tag cyan">10 条 · 已判重</span></div>
+      <ul style="list-style:none;" id="batch-list"></ul>
+    </div>
+  </div>
+</main>
+
+<!-- 回灌建议 modal -->
+<div class="modal-bk" id="fb-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>回灌建议 · 反哺生成</h3><button class="icon-btn" id="fb-close" type="button">×</button></div>
+    <div class="modal-body"><ul style="list-style:none;" id="fb-modal-list"></ul></div>
+    <div class="modal-foot"><button class="btn btn-ghost" id="fb-cancel" type="button">关闭</button></div>
+  </div>
+</div>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+(function () {
+  var ic = window.UI.ic;
+  // 模板切换
+  var tpl = '探店口播';
+  var tplBtns = document.querySelectorAll('#gen-tpl button');
+  tplBtns.forEach(function (b) { b.onclick = function () { tplBtns.forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); tpl = b.dataset.tpl; }; });
+
+  // 字幕开关
+  var cc = document.getElementById('sw-cc');
+  cc.addEventListener('click', function () { cc.classList.toggle('on'); });
+
+  // 批次变体（mock 填充）
+  var batch = DB.contents.slice(0, 8);
+  var batchEl = document.getElementById('batch-list');
+  function renderBatch(list) {
+    batchEl.innerHTML = list.map(function (c, i) {
+      var tag = c.status === 'ready' ? '<span class="tag green">已就绪</span>' : c.status === 'review' ? '<span class="tag amber">待审</span>' : '<span class="tag gray">草稿</span>';
+      return '<li style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-soft)">' +
+        '<span class="mono faint" style="width:16px">' + (i + 1) + '</span>' +
+        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.title + '</span>' + tag + '</li>';
+    }).join('');
+  }
+  renderBatch(batch);
+
+  // AI 生成
+  var genBtn = document.getElementById('gen-btn');
+  genBtn.addEventListener('click', function () {
+    var inp = document.getElementById('gen-input').value.trim();
+    if (!inp) { window.UI.toast('请先粘贴原料链接或主题', 'err'); return; }
+    genBtn.classList.add('is-loading');
+    document.getElementById('pv-state').textContent = '生成中';
+    document.getElementById('pv-scripts').innerHTML =
+      '<div class="skel" style="width:70%;margin-bottom:9px"></div><div class="skel" style="width:100%;margin-bottom:9px"></div><div class="skel" style="width:86%;margin-bottom:9px"></div><div class="skel" style="width:55%"></div>';
+    api.generate(inp, tpl).then(function (r) {
+      genBtn.classList.remove('is-loading');
+      document.getElementById('pv-state').textContent = '新草稿';
+      document.getElementById('pv-meta').innerHTML =
+        '<span class="tag outline">时长 ' + r.draft.duration + '</span><span class="tag outline">配音 已合成</span><span class="tag outline">字幕 自动</span><span class="tag outline">画质 ' + r.draft.quality + '</span>';
+      var scripts = r.scripts.map(function (s, i) {
+        return '<label style="display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--panel)">' +
+          '<input type="radio" name="sc"' + (i === 0 ? ' checked' : '') + ' style="margin-top:3px;accent-color:var(--accent)">' +
+          '<span style="font-size:var(--t-1)">' + s + '</span></label>';
+      }).join('');
+      document.getElementById('pv-scripts').innerHTML = scripts;
+      // 变体顶部插入一条新产出
+      batch.unshift({ title: '「' + inp.slice(0, 9) + '」·A1', status: 'review' });
+      renderBatch(batch);
+      window.UI.toast('已产出 10 条变体，脚本可切换', 'ok');
+    });
+  });
+
+  // 加入待审队列
+  document.getElementById('btn-toqueue').addEventListener('click', function () {
+    this.textContent = '已加入 ✓'; this.style.opacity = .7; this.disabled = true;
+    window.UI.toast('已加入预审队列，可在「预审调度」查看', 'ok');
+  });
+
+  // 回灌建议 modal
+  var modal = document.getElementById('fb-modal');
+  function openModal() {
+    api.fetchFeedbackTags().then(function (tags) {
+      document.getElementById('fb-modal-list').innerHTML = tags.map(function (t, i) {
+        return '<li style="padding:9px 10px;margin-bottom:8px;border-left:2px solid var(--accent);background:var(--panel);border-radius:8px">' + (i + 1) + '. ' + t + '</li>';
+      }).join('');
+    });
+    modal.classList.add('open');
+  }
+  document.getElementById('btn-fbtag').onclick = openModal;
+  document.getElementById('btn-params').onclick = function () { window.UI.toast('MVP 阶段变体数固定为 10 条', 'info'); };
+  document.getElementById('fb-close').onclick = document.getElementById('fb-cancel').onclick = function () { modal.classList.remove('open'); };
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
+  document.getElementById('btn-cc').onclick = function () { window.UI.toast('配音与字幕已合成到当前选中脚本', 'ok'); };
+})();
+</script>
+</body>
+</html>

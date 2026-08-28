@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>预审与调度 · AICast</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="schedule">
+
+<main class="content">
+  <div class="crumb"><a href="index.html">工作台</a><span class="sep">/</span><span>预审与调度</span></div>
+
+  <div class="card rv d1" style="border-left:3px solid var(--warning);margin-bottom:16px;">
+    <div class="row2">
+      <span style="color:var(--warning)">●</span>
+      <b>互禁规则</b><span class="small muted">抖音与快手不可同步 · 小红书与视频号不可同步。系统在选题平台时自动互斥，并在提交排布前二次校验。</span>
+    </div>
+  </div>
+
+  <div class="grid gl-r" style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start;">
+    <!-- 待审队列 -->
+    <div class="card rv d2">
+      <div class="card-head">
+        <div><div class="card-title">待发布内容</div><div class="card-sub">勾选内容与目标平台后生成错峰排布</div></div>
+        <span class="tag amber" id="t-count">3 条</span>
+      </div>
+      <div id="task-list"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-soft);" class="row2">
+        <button class="btn btn-primary" id="btn-sched" type="button">智能错峰排布</button>
+        <label style="display:flex;align-items:center;gap:8px"><span class="switch on" id="sw-confirm"></span><span class="small">排布后需人工确认</span></label>
+      </div>
+    </div>
+
+    <!-- 排布结果 -->
+    <div class="card rv d3">
+      <div class="card-head"><span class="card-title">错峰排布结果</span><span class="tag cyan" id="r-state">待排布</span></div>
+      <div id="sched-result">
+        <div class="empty">还未生成排布。<br>勾选左侧内容并点击「智能错峰排布」。</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+(function () {
+  var PLATS = ['抖音', '快手', '小红书', '视频号'];
+  // 互斥对：平台 → 被禁平台的 index
+  var EXCLUDE = { '抖音': '快手', '快手': '抖音', '小红书': '视频号', '视频号': '小红书' };
+  var selected = {}; // taskId -> [platforms]
+  var rows = {};
+
+  function chip(plat, on, disabled) {
+    return '<button type="button" class="chip-plat' + (on ? ' on' : '') + (disabled ? ' dis' : '') + '" data-p="' + plat + '">' + plat + '</button>';
+  }
+
+  function updateCount() {
+    var n = Object.keys(selected).length;
+    var c = document.getElementById('t-count'); c.textContent = (n ? n : 0) + ' 条已选';
+    c.className = 'tag ' + (n ? 'cyan' : 'amber');
+  }
+
+  function reps() {
+    var root = this.root;
+    if (!root.querySelector('.ck').checked) { delete selected[this.id]; }
+    else { selected[this.id] = Array.prototype.map.call(root.querySelectorAll('.chip-plat.on'), function (c) { return c.dataset.p; }); }
+    updateCount();
+  }
+
+  function renderTasks(list) {
+    var el = document.getElementById('task-list');
+    el.innerHTML = list.map(function (t) {
+      var plats = t.plan.map(function (p) { return p.platform; });
+      var checks = PLATS.map(function (p) { return chip(p, plats.indexOf(p) >= 0, false); }).join('');
+      var pb = t.healthGate === '通过' ? '<span class="tag green">健康门禁通过</span>' : '<span class="tag amber">临界拦截</span>';
+      return '<div class="task-row" id="task-' + t.id + '" style="border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:12px;background:var(--panel)">' +
+        '<div class="row2" style="justify-content:space-between"><div style="display:flex;gap:10px;align-items:center">' +
+        '<input type="checkbox" class="ck" style="width:16px;height:16px;accent-color:var(--accent)" checked>' +
+        '<div><div style="font-weight:600">' + t.content + '</div><div class="small faint">来源：' + t.source + '</div></div></div>' + pb + '</div>' +
+        '<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">' + checks + '</div></div>';
+    }).join(' ');
+
+    el.querySelectorAll('.task-row').forEach(function (row) {
+      var id = row.id.replace('task-', '');
+      var task = list.find(function (x) { return x.id === id; });
+      if (!task) return;
+      var plats = task.plan.map(function (p) { return p.platform; });
+      // 初始：默认平台 on；未出现在 plan 的平台一律 dis（不可选，符合 mock 门禁）
+      row.querySelectorAll('.chip-plat').forEach(function (c) {
+        if (plats.indexOf(c.dataset.p) >= 0) c.classList.add('on');
+        else c.classList.add('dis');
+      });
+      selected[id] = plats.slice();
+      updateCount();
+
+      var ck = row.querySelector('.ck');
+      ck.onchange = function () {
+        var any = ck.checked;
+        row.querySelectorAll('.chip-plat').forEach(function (c) {
+          var wasIn = plats.indexOf(c.dataset.p) >= 0;
+          c.classList.toggle('dis', !any || !wasIn);
+          if (!any) c.classList.remove('on');
+          else if (wasIn) c.classList.add('on');
+        });
+        reps.call({ id: id, root: row });
+      };
+      row.querySelectorAll('.chip-plat').forEach(function (c) {
+        c.onclick = function () {
+          if (c.classList.contains('dis')) { window.UI.toast('该平台不可选（与已选平台互禁或未通过门禁）', 'err'); return; }
+          c.classList.toggle('on');
+          row.querySelectorAll('.chip-plat').forEach(function (o) {
+            if (o.classList.contains('on') && EXCLUDE[o.dataset.p] === c.dataset.p && o !== c) o.classList.remove('on');
+          });
+          reps.call({ id: id, root: row });
+        };
+      });
+    });
+  }
+
+  var list = [];
+  api.fetchTasks().then(function (t) { list = t; renderTasks(t); });
+
+  // 智能错峰
+  document.getElementById('btn-sched').addEventListener('click', function () {
+    var ids = Object.keys(selected).filter(function (k) { return selected[k].length; });
+    if (!ids.length) { window.UI.toast('请先勾选内容并至少选择一个平台', 'err'); return; }
+    var btn = this; btn.classList.add('is-loading');
+    var box = document.getElementById('sched-result');
+    document.getElementById('r-state').textContent = '排布中';
+    box.innerHTML = '<div class="skel" style="margin-bottom:10px"></div><div class="skel" style="width:70%;margin-bottom:10px"></div><div class="skel" style="width:85%"></div>';
+    // mock 错排
+    var seq = ids.slice(0, 3);
+    Promise.all(seq.map(function (id) {
+      return api.buildSchedule(id, selected[id]).then(function (res) {
+        var t = list.find(function (x) { return x.id === id; });
+        return '<div style="margin-bottom:14px"><div style="font-weight:600;margin-bottom:7px">' + (t ? t.content : id) + '</div>' +
+          res.map(function (r) {
+            var g = r.healthGate === '通过' ? '<span class="tag green">通过</span>' : '<span class="tag amber">拦截</span>';
+            var st = r.healthGate === '通过' ? '' : 'style="opacity:.5"';
+            return '<div class="row2" ' + st + ' style="padding:7px 10px;border-left:2px solid var(--accent);background:var(--panel);border-radius:8px;margin-bottom:6px">' +
+              '<span>' + r.platform + '</span><span class="mono small" style="margin-left:auto">' + (r.time === '待排' ? '<em class="faint">健康度低，暂缓</em>' : r.time) + '</span>' + g + '</div>';
+          }).join('') + '</div>';
+      });
+    })).then(function (parts) {
+      btn.classList.remove('is-loading');
+      document.getElementById('r-state').textContent = '已排布 · 待确认';
+      box.innerHTML = parts.join('') +
+        '<div class="row2"><button class="btn btn-primary btn-block" id="r-confirm">确认发布以上计划</button></div>';
+      document.getElementById('r-confirm').onclick = function () {
+        this.textContent = '已确认 ✓'; this.disabled = true;
+        document.getElementById('r-state').textContent = '已确认，进入发布';
+        window.UI.toast('错峰计划已确认，将按时间自动执行', 'ok');
+      };
+    });
+  });
+
+  // 确认开关
+  var sw = document.getElementById('sw-confirm');
+  sw.addEventListener('click', function () { sw.classList.toggle('on'); });
+})();
+</script>
+
+<style>
+.chip-plat{padding:4px 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-sub);font-size:12px;cursor:pointer;transition:var(--c-trans);}
+.chip-plat.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.chip-plat.dis{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
+</style>
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>方案 A · 数字人内容工坊 · 小程序交互原型（逼真版）</title>
+<style>
+  :root{
+    --blue:#2D6BFF; --blue-d:#1E50D6; --violet:#7C5CFF; --ink:#0F172A;
+    --gray:#8a94a6; --line:#EEF1F6; --bg:#F4F6FB;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"SF Pro Text","PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:#E6EAF2;color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;justify-content:center;padding:30px 0;min-height:100vh;}
+  /* iphone */
+  .phone{width:390px;background:#0F172A;border-radius:46px;padding:11px;box-shadow:0 24px 60px rgba(15,23,42,.32);position:relative;}
+  .screen{background:#F6F8FC;border-radius:36px;overflow:hidden;height:830px;display:flex;flex-direction:column;position:relative;}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:30;}
+  .statusbar{height:52px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;font-size:14px;color:#0F172A;font-weight:700;z-index:20;}
+  .statusbar .sig{display:flex;gap:2px;align-items:flex-end;}
+  .statusbar .sig i{width:3px;background:#0F172A;border-radius:1px;display:block;}
+  .statusbar .sig i:nth-child(1){height:6px;} .statusbar .sig i:nth-child(2){height:9px;} .statusbar .sig i:nth-child(3){height:12px;} .statusbar .sig i:nth-child(4){height:15px;}
+  .statusbar .bat{width:24px;height:12px;border:1.5px solid #0F172A;border-radius:3px;position:relative;display:inline-block;}
+  .statusbar .bat::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:#0F172A;border-radius:1px;}
+  .statusbar .bat::before{content:"";position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:15px;background:#0F172A;border-radius:1px;}
+  .appbody{flex:1;overflow:auto;padding-bottom:84px;}
+  .spage{display:none;animation:fade .22s ease;padding:0 0 10px;}
+  .spage.on{display:block;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  /* home indicator */
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#0F172A;opacity:.85;z-index:30;}
+  /* tabbar */
+  .tabbar{position:absolute;bottom:11px;left:11px;right:11px;height:64px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border:1px solid #eef1f6;border-radius:26px;display:flex;align-items:center;box-shadow:0 -2px 12px rgba(16,24,40,.06);z-index:25;}
+  .tabbar .tb{flex:1;text-align:center;font-size:10.5px;color:#9aa4b6;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .tabbar .tb.active{color:var(--blue);font-weight:700;}
+  .tabbar .tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  /* generic */
+  .pad{padding:0 18px;}
+  .hero{background:linear-gradient(135deg,#2D6BFF,#7C5CFF);color:#fff;padding:16px 18px 22px;}
+  .hero .h1{font-size:19px;font-weight:800;}
+  .hero .h2{font-size:12.5px;opacity:.92;margin-top:4px;}
+  .search{margin-top:14px;background:rgba(255,255,255,.2);border-radius:11px;padding:9px 13px;display:flex;align-items:center;gap:8px;font-size:13px;backdrop-filter:blur(4px);}
+  .search svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:1.9;opacity:.9;}
+  .cta{margin:16px 18px 0;background:#fff;border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);cursor:pointer;}
+  .cta .ic{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#2D6BFF,#7C5CFF);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+  .cta .ic svg{width:23px;height:23px;stroke:#fff;fill:none;stroke-width:1.9;}
+  .cta .t{font-size:15px;font-weight:700;}
+  .cta .d{font-size:12px;color:var(--gray);margin-top:2px;}
+  .cta .ar{margin-left:auto;color:var(--blue);}
+  .cta .ar svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;}
+  .geoentry{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#EEF3FF,#F3EEFF);border:1px solid #D9E2FF;border-radius:13px;padding:12px 14px;cursor:pointer;transition:transform .12s ease,box-shadow .2s ease;}
+  .geoentry:active{transform:scale(.985);}
+  .geoentry .ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .geoentry .ic svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .geoentry .t{font-size:13.5px;font-weight:700;color:var(--txt);}
+  .geoentry .d{font-size:11px;color:var(--gray);margin-top:2px;line-height:1.45;}
+  /* login (overlay) */
+  .loginpage{position:absolute;inset:0;z-index:40;display:flex;align-items:stretch;justify-content:center;overflow:hidden;}
+  .loginpage.hidden{display:none;}
+  .lg-bg{position:absolute;inset:0;background:linear-gradient(150deg,#0F2A6B 0%,#1E50D6 45%,#7C5CFF 100%);}
+  .lg-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 80% 0%,rgba(124,92,255,.55),transparent 60%),radial-gradient(90% 70% at 0% 100%,rgba(45,107,255,.45),transparent 55%);}
+  .lg-bg::before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.08);top:-60px;right:-50px;filter:blur(2px);}
+  .lg-card{position:relative;z-index:2;width:100%;padding:54px 30px 30px;display:flex;flex-direction:column;color:#fff;}
+  .lg-logo{width:62px;height:62px;border-radius:18px;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.18);}
+  .lg-logo svg{width:34px;height:34px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .lg-title{font-size:25px;font-weight:800;margin-top:18px;letter-spacing:.5px;}
+  .lg-sub{font-size:13px;opacity:.82;margin-top:7px;line-height:1.5;}
+  .lg-field{margin-top:26px;}
+  .lg-lab{font-size:12.5px;opacity:.85;margin-bottom:9px;font-weight:600;}
+  .lg-in{width:100%;height:50px;border-radius:13px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;padding:0 15px;font-size:15px;font-family:inherit;backdrop-filter:blur(4px);}
+  .lg-in::placeholder{color:rgba(255,255,255,.55);}
+  .lg-in:focus{outline:none;border-color:#fff;background:rgba(255,255,255,.2);}
+  .lg-inrow{display:flex;gap:10px;}
+  .lg-inrow .lg-in{flex:1;}
+  .lg-codebtn{flex-shrink:0;padding:0 16px;height:50px;border-radius:13px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .lg-codebtn:disabled{opacity:.6;cursor:default;}
+  .lg-btn{margin-top:30px;height:52px;border-radius:14px;border:none;background:#fff;color:#1E50D6;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.22);transition:transform .12s ease;}
+  .lg-btn:active{transform:scale(.98);}
+  .lg-sep{display:flex;align-items:center;gap:12px;margin:22px 0 16px;font-size:12px;opacity:.7;}
+  .lg-sep::before,.lg-sep::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.28);}
+  .lg-wx{display:flex;align-items:center;justify-content:center;gap:9px;height:50px;border-radius:13px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;transition:.15s;}
+  .lg-wx:active{background:rgba(255,255,255,.2);}
+  .lg-wx svg{width:21px;height:21px;}
+  .lg-tip{margin-top:18px;text-align:center;font-size:11.5px;opacity:.6;}
+  .logged-out{display:none !important;}
+  .sec{margin-top:22px;}
+  /* vip */
+  .vipcards{display:flex;gap:10px;padding:16px;overflow-x:auto;}
+  .vcard{flex:0 0 150px;background:#fff;border:1px solid #e6eaf2;border-radius:14px;padding:14px 12px;position:relative;}
+  .vcard.hot{border-color:var(--blue);box-shadow:0 8px 22px rgba(45,107,255,.16);}
+  .vcard .vflag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:14px;}
+  .vcard .vn{font-size:15px;font-weight:800;color:var(--txt);}
+  .vcard .vp{font-size:22px;font-weight:800;color:var(--blue-d);margin:6px 0 10px;}
+  .vcard .vp small{font-size:11px;color:var(--sub);}
+  .vcard .vl{font-size:11.5px;color:#475569;padding:3px 0;}
+  .vbtn{margin-top:10px;width:100%;height:36px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;}
+  .vbtn.ghost{background:#fff;border:1px solid #d8deea;color:var(--sub);}
+  .sect{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+  .sect .more{font-size:12px;color:var(--gray);font-weight:500;}
+  .chips{display:flex;gap:9px;overflow-x:auto;padding:0 18px;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{white-space:nowrap;padding:7px 14px;background:#fff;border:1px solid var(--line);border-radius:20px;font-size:12.5px;color:#5b6577;cursor:pointer;flex-shrink:0;}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
+  /* template cards */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 18px;}
+  .tmpl{border-radius:14px;overflow:hidden;background:#fff;box-shadow:var(--shadow);cursor:pointer;}
+  .tmpl .cv{height:104px;position:relative;background-size:cover;background-position:center;}
+  .tmpl .cv .dur{position:absolute;bottom:7px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;padding:1px 6px;border-radius:6px;}
+  .tmpl .cv .tag{position:absolute;top:7px;left:8px;background:rgba(255,255,255,.9);color:#0F172A;font-size:10px;padding:1px 7px;border-radius:6px;font-weight:600;}
+  .tmpl .info{padding:9px 11px 11px;}
+  .tmpl .nm{font-size:13px;font-weight:700;line-height:1.35;}
+  .tmpl .au{font-size:11px;color:var(--gray);margin-top:5px;display:flex;align-items:center;gap:5px;}
+  .tmpl .au .a{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#cbd5e1,#94a3b8);background-size:cover;background-position:center;}
+  /* avatar grid */
+  .agrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;padding:0 18px;margin-top:18px;}
+  .ava{border-radius:14px;overflow:hidden;background:#fff;box-shadow:var(--shadow);cursor:pointer;}
+  .ava .cv{height:122px;display:flex;align-items:center;justify-content:center;position:relative;background-size:cover;background-position:center top;}
+  .ava .vip{position:absolute;top:6px;right:6px;background:linear-gradient(135deg,#FFB020,#FF7A00);color:#fff;font-size:9.5px;padding:1px 6px;border-radius:6px;font-weight:700;}
+  .ava .nm{font-size:12px;font-weight:700;padding:8px 9px 3px;}
+  .ava .ht{font-size:10.5px;color:var(--gray);padding:0 9px 9px;display:flex;align-items:center;gap:4px;}
+  .ava .role{display:inline-block;font-size:10px;color:var(--blue-d);background:var(--blue-l);padding:2px 8px;border-radius:10px;margin:0 9px 9px;}
+  /* create flow */
+  .steps{display:flex;align-items:center;justify-content:space-between;padding:14px 22px 4px;}
+  .steps .st{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative;}
+  .steps .st .c{width:28px;height:28px;border-radius:50%;background:#e9edf4;color:#9aa4b6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;z-index:2;}
+  .steps .st .lb{font-size:10.5px;color:#9aa4b6;}
+  .steps .st.on .c{background:var(--blue);color:#fff;}
+  .steps .st.on .lb{color:var(--blue);font-weight:700;}
+  .steps .st.done .c{background:#16A34A;color:#fff;}
+  .steps .line{position:absolute;top:14px;left:50%;width:100%;height:2px;background:#e9edf4;z-index:1;}
+  .steps .st.done .line{background:#16A34A;}
+  .panel{background:#fff;border-radius:16px;margin:16px 18px 0;padding:16px;box-shadow:var(--shadow);}
+  .panel .pt{font-size:14px;font-weight:700;margin-bottom:12px;}
+  .selrow{display:flex;align-items:center;gap:11px;padding:10px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;cursor:pointer;}
+  .selrow.on{border-color:var(--blue);}
+  .selrow .cv{width:46px;height:46px;border-radius:10px;flex-shrink:0;background-size:cover;background-position:center;}
+  .selrow .nm{font-size:13px;font-weight:700;}
+  .selrow .ds{font-size:11px;color:var(--gray);margin-top:1px;}
+  .aiwrite{display:flex;align-items:center;gap:8px;justify-content:center;background:linear-gradient(135deg,#7C5CFF,#2D6BFF);color:#fff;border-radius:11px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:11px;}
+  .aiwrite svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.9;}
+  textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px;font-size:13px;font-family:inherit;resize:none;color:var(--ink);line-height:1.6;}
+  textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(45,107,255,.15);}
+  .preview{height:190px;border-radius:12px;background:linear-gradient(135deg,#1e293b,#0f172a);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;position:relative;overflow:hidden;}
+  .preview svg{width:46px;height:46px;stroke:#fff;fill:none;stroke-width:1.6;opacity:.85;}
+  .preview .pn{font-size:13px;margin-top:10px;font-weight:700;}
+  .preview .ps{font-size:11px;opacity:.7;margin-top:3px;}
+  /* digital-human preview in create flow */
+  .dhprev{display:none;margin:14px 0 4px;border-radius:14px;overflow:hidden;background:#0f172a;box-shadow:var(--shadow);}
+  .dhprev.on{display:block;}
+  .dhprev .pbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1a2238;color:#fff;}
+  .dhprev .pbar .dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.25);}
+  .dhprev .pbar .t{font-size:12px;font-weight:600;}
+  .dhprev .frame{position:relative;height:300px;background-size:cover;background-position:center top;}
+  .dhprev .playbtn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  .dhprev .playbtn svg{width:22px;height:22px;fill:var(--blue);stroke:none;margin-left:3px;}
+  .dhprev .cap{position:absolute;left:0;right:0;bottom:0;padding:16px 14px 13px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;}
+  .dhprev .cap .cn{font-size:13px;font-weight:700;}
+  .dhprev .cap .ct{font-size:11px;opacity:.88;margin-top:3px;line-height:1.5;}
+  .preview .badge{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.18);font-size:10px;padding:2px 8px;border-radius:6px;}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin:16px 18px 0;transition:.15s;}
+  .btn:hover{background:var(--blue-d);}
+  .btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
+  .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  /* compose flow */
+  .compose{display:none;margin:14px 0 4px;border-radius:14px;overflow:hidden;background:#f5f7fb;border:1px solid var(--line);}
+  .compose.on{display:block;}
+  .compose .chead{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#0f172a;color:#fff;font-size:12.5px;font-weight:600;}
+  .compose .chead .dot{width:8px;height:8px;border-radius:50%;background:#F7971E;box-shadow:0 0 0 3px rgba(247,151,30,.25);animation:pulse 1.2s ease-in-out infinite;}
+  .compose .chead .dot.done{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.25);animation:none;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .pbar-out{height:6px;background:#e2e8f0;margin:0;overflow:hidden;}
+  .pbar-in{height:100%;width:0;background:linear-gradient(90deg,#2D6BFF,#7C5CFF);transition:width .4s ease;}
+  .cstages{padding:12px 14px 4px;}
+  .cstage{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px;color:#94a3b8;}
+  .cstage .ic{width:20px;height:20px;border-radius:50%;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:transparent;transition:.2s;}
+  .cstage.active{color:#334155;}
+  .cstage.active .ic{border-color:var(--blue);color:var(--blue);}
+  .cstage.done{color:#0f172a;}
+  .cstage.done .ic{border-color:#16A34A;background:#16A34A;color:#fff;}
+  .cstage .pc{margin-left:auto;font-size:11px;color:#94a3b8;}
+  .cstage.done .pc{color:#16A34A;}
+  .cfinal{padding:4px 14px 16px;}
+  .cfinal .ok{display:flex;align-items:center;gap:7px;font-size:13px;color:#16A34A;font-weight:700;margin-bottom:10px;}
+  .cfinal .ok svg{width:18px;height:18px;stroke:#16A34A;fill:none;stroke-width:2.2;}
+  .cbtn{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin:10px 0 0;transition:.15s;}
+  .cbtn:disabled{opacity:.6;cursor:default;}
+  .cbtn.ghostbtn{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+  /* works */
+  .witem{background:#fff;border-radius:14px;margin:12px 18px 0;padding:12px;display:flex;gap:12px;box-shadow:var(--shadow);}
+  .witem .cv{width:74px;height:74px;border-radius:10px;flex-shrink:0;background-size:cover;background-position:center;position:relative;}
+  .witem .cv .stt{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;font-size:9px;padding:1px 5px;border-radius:5px;}
+  .witem .info{flex:1;}
+  .witem .nm{font-size:13.5px;font-weight:700;}
+  .witem .mt{font-size:11px;color:var(--gray);margin-top:3px;}
+  .witem .acts{display:flex;gap:7px;margin-top:9px;}
+  .witem .ab{font-size:11px;padding:5px 11px;border-radius:8px;background:rgba(45,107,255,.1);color:var(--blue-d);font-weight:600;cursor:pointer;}
+  .witem .ab.g{background:#E7F8EF;color:#0f9d58;}
+  .witem .ab.ghost{background:#f1f4f9;color:#5b6577;}
+  /* mine */
+  .mhead{background:linear-gradient(135deg,#0F172A,#1B2550);padding:20px 18px 22px;color:#fff;}
+  .mhead .u{display:flex;align-items:center;gap:13px;}
+  .mhead .av{width:54px;height:54px;border-radius:50%;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
+  .mhead .nm{font-size:17px;font-weight:800;}
+  .mhead .id{font-size:12px;opacity:.8;margin-top:2px;}
+  .mhead .edit{margin-left:auto;font-size:12px;opacity:.85;border:1px solid rgba(255,255,255,.3);padding:5px 12px;border-radius:20px;}
+  .balcard{background:#fff;border-radius:16px;margin:-16px 18px 0;padding:15px 17px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:relative;z-index:2;}
+  .balcard .l{font-size:12px;color:var(--gray);}
+  .balcard .v{font-size:23px;font-weight:800;margin-top:2px;}
+  .balcard .v small{font-size:12px;color:var(--gray);font-weight:600;}
+  .balcard .btn2{background:linear-gradient(135deg,#2D6BFF,#7C5CFF);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;}
+  .vipcard{margin:14px 18px 0;background:linear-gradient(135deg,#FFB020,#FF7A00);border-radius:16px;padding:15px 17px;color:#fff;display:flex;align-items:center;justify-content:space-between;}
+  .vipcard .t{font-size:14px;font-weight:800;}
+  .vipcard .d{font-size:11.5px;opacity:.92;margin-top:2px;}
+  .vipcard .go{background:rgba(255,255,255,.25);font-size:12px;font-weight:700;padding:7px 14px;border-radius:20px;cursor:pointer;}
+  .mlist{margin:16px 18px 0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);}
+  .mitem{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #f1f4f9;cursor:pointer;}
+  .mitem:last-child{border-bottom:none;}
+  .mitem .ic{width:34px;height:34px;border-radius:10px;background:rgba(45,107,255,.1);color:var(--blue-d);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .mitem .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .mitem .t{font-size:13.5px;font-weight:600;flex:1;}
+  .mitem .r{color:#c2c9d6;font-size:12px;}
+  .mitem .r svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .geoentry{margin:14px 18px 0;background:linear-gradient(135deg,#EEF3FF,#F3EEFF);border:1px solid #dde6ff;border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .geoentry .ic{width:38px;height:38px;border-radius:10px;background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;}
+  .geoentry .ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .geoentry .t{font-size:13px;font-weight:700;color:#1E50D6;}
+  .geoentry .d{font-size:11px;color:#5b6577;margin-top:2px;}
+  .toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(15,23,42,.92);color:#fff;padding:10px 18px;border-radius:11px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:80;}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="screen">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span class="sig"><i></i><i></i><i></i><i></i></span>
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="#0F172A" fill="none" stroke-width="2"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="18.5" r="1.2" fill="#0F172A" stroke="none"/></svg>
+        <span class="bat"></span>
+      </span>
+    </div>
+    <!-- 登录页（覆盖层，默认显示） -->
+    <div class="loginpage" id="loginpage">
+      <div class="lg-bg"></div>
+      <div class="lg-card">
+        <div class="lg-logo"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg></div>
+        <div class="lg-title">数字人内容工坊</div>
+        <div class="lg-sub">30 秒生成口播视频 · 让品牌主动被 AI 推荐</div>
+        <div class="lg-field">
+          <div class="lg-lab">手机号</div>
+          <input class="lg-in" id="lgPhone" type="tel" placeholder="请输入手机号" value="138 0000 8821" />
+        </div>
+        <div class="lg-field">
+          <div class="lg-lab">验证码</div>
+          <div class="lg-inrow">
+            <input class="lg-in" id="lgCode" type="text" placeholder="请输入验证码" />
+            <button class="lg-codebtn" id="lgCodeBtn" onclick="sendCode()">获取验证码</button>
+          </div>
+        </div>
+        <button class="lg-btn" onclick="doLogin()">登 录 / 注 册</button>
+        <div class="lg-sep"><span>或通过以下方式登录</span></div>
+        <div class="lg-wx" onclick="wxLogin()">
+          <svg viewBox="0 0 24 24"><path d="M9 4C5.1 4 2 6.6 2 9.8c0 1.8 1 3.4 2.6 4.5L4 16l2.3-1.2c.8.2 1.6.3 2.4.3h.5a5.6 5.6 0 0 1-.2-1.5c0-3.2 3-5.8 6.7-5.8h.6C15.2 5.9 12.4 4 9 4z" fill="currentColor"/><path d="M22 14.6c0-2.7-2.7-4.9-6-4.9s-6 2.2-6 4.9 2.7 4.9 6 4.9c.7 0 1.4-.1 2-.3l1.9 1-.5-1.7c1.6-.9 2.6-2.3 2.6-4z" fill="currentColor"/></svg>
+          微信一键登录
+        </div>
+        <div class="lg-tip">登录即同意《用户协议》与《隐私政策》</div>
+      </div>
+    </div>
+    <div class="appbody logged-out">
+      <!-- 首页 -->
+      <div class="spage on" id="s-home">
+        <div class="hero">
+          <div class="h1">数字人内容工坊</div>
+          <div class="h2">30 秒生成口播视频，让品牌主动被 AI 推荐</div>
+          <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>搜索模板 / 数字人 / 场景</div>
+        </div>
+        <div class="cta" onclick="goto('create')">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg></div>
+          <div><div class="t">开始创作</div><div class="d">选数字人 → 选模板 → 出片</div></div>
+          <div class="ar"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="geoentry" onclick="toast('已联动 GEO 中控台：作品可一键生成优化内容并合规分发')" style="margin-top:14px;">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+          <div><div class="t">GEO 内容闭环</div><div class="d">作品 → 一键生成 GEO 优化文案（BLUF+引用） → 合规分发</div></div>
+        </div>
+        <div class="sec pad"><div class="sect">精选场景模板</div></div>
+        <div class="chips" style="padding:0 18px 4px;">
+          <div class="chip on">全部</div><div class="chip">探店</div><div class="chip">节日营销</div><div class="chip">产品口播</div><div class="chip">知识科普</div>
+        </div>
+        <div class="cards">
+          <div class="tmpl" onclick="goto('create')"><div class="cv" style="background-color:#FF7A59;background-image:url('assets/img_store44.jpg');"><span class="tag">探店</span><span class="dur">0:32</span></div><div class="info"><div class="nm">门店开业探店口播</div><div class="au"><span class="a" style="background-image:url('assets/dh_brand.jpg');"></span>已用 2,140 次</div></div></div>
+          <div class="tmpl" onclick="goto('create')"><div class="cv" style="background-color:#2D6BFF;background-image:url('assets/img_product21.jpg');"><span class="tag">产品</span><span class="dur">0:45</span></div><div class="info"><div class="nm">新品卖点快讲</div><div class="au"><span class="a" style="background-image:url('assets/dh_local.jpg');"></span>已用 3,860 次</div></div></div>
+          <div class="tmpl" onclick="goto('create')"><div class="cv" style="background-color:#00C2A8;background-image:url('assets/img_festival09.jpg');"><span class="tag">节日</span><span class="dur">0:28</span></div><div class="info"><div class="nm">中秋礼遇祝福</div><div class="au"><span class="a" style="background-image:url('assets/dh_festival.jpg');"></span>已用 1,520 次</div></div></div>
+          <div class="tmpl" onclick="goto('create')"><div class="cv" style="background-color:#F7971E;background-image:url('assets/img_knowledgesci.jpg');"><span class="tag">知识</span><span class="dur">1:12</span></div><div class="info"><div class="nm">行业科普讲解</div><div class="au"><span class="a" style="background-image:url('assets/dh_teacher.jpg');"></span>已用 980 次</div></div></div>
+        </div>
+        <div class="sec pad"><div class="sect">大家的创作<span class="more">查看更多</span></div></div>
+        <div class="cards" style="margin-bottom:8px;">
+          <div class="tmpl"><div class="cv" style="background-color:#667EEA;background-image:url('assets/dh_brand.jpg');"><span class="dur">0:38</span></div><div class="info"><div class="nm">智能窗帘体验官</div><div class="au"><span class="a" style="background-image:url('assets/dh_brand.jpg');"></span>@云栖智家</div></div></div>
+          <div class="tmpl"><div class="cv" style="background-color:#11998E;background-image:url('assets/dh_guide.jpg');"><span class="dur">0:51</span></div><div class="info"><div class="nm">全屋智能方案</div><div class="au"><span class="a" style="background-image:url('assets/dh_guide.jpg');"></span>@栖云科技</div></div></div>
+        </div>
+      </div>
+
+      <!-- 数字形象 -->
+      <div class="spage" id="s-avatar">
+        <div class="hero"><div class="h1">数字形象</div><div class="h2">精选公共形象，一键开拍；VIP 解锁专属定制</div></div>
+        <div class="sec" style="margin-top:18px;"><div class="chips" style="padding:0 18px 2px;"><div class="chip on">推荐</div><div class="chip">商务</div><div class="chip">节庆</div><div class="chip">美妆</div><div class="chip">知识</div><div class="chip">本地生活</div></div></div>
+        <div class="agrid">
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_brand.jpg');"><span class="vip">VIP</span></div><div class="nm">品牌主播 · 晓琳</div><div class="role">商务精英 · 品牌宣传</div><div class="ht">🔥 人气 9.8k</div></div>
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_local.jpg');"></div><div class="nm">探店达人 · 阿杰</div><div class="role">本地生活 · 到店引流</div><div class="ht">🔥 人气 7.2k</div></div>
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_teacher.jpg');"><span class="vip">VIP</span></div><div class="nm">智家讲师 · 陈教授</div><div class="role">知识科普 · 专业背书</div><div class="ht">🔥 人气 6.5k</div></div>
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_festival.jpg');"></div><div class="nm">节日暖心 · 小满</div><div class="role">节点营销 · 品牌温度</div><div class="ht">🔥 人气 5.1k</div></div>
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_beauty.jpg');"></div><div class="nm">美学顾问 · Lily</div><div class="role">生活方式 · 好物种草</div><div class="ht">🔥 人气 4.8k</div></div>
+          <div class="ava" onclick="goto('create')"><div class="cv" style="background-color:#cbd5e1;background-image:url('assets/dh_guide.jpg');"></div><div class="nm">本地向导 · 大壮</div><div class="role">同城引流 · 探店打卡</div><div class="ht">🔥 人气 3.9k</div></div>
+        </div>
+        <div class="btn" onclick="goto('create')" style="margin-top:20px;">+ 使用形象开拍</div>
+      </div>
+
+      <!-- 创作 -->
+      <div class="spage" id="s-create">
+        <div class="hero" style="padding-bottom:18px;"><div class="h1">创作</div><div class="h2">5 步出片，AI 帮你写稿</div></div>
+        <div class="steps" id="steps">
+          <div class="st done on"><div class="c">✓</div><div class="lb">选数字人</div></div><div class="st on"><div class="c">2</div><div class="lb">选模板</div><div class="line"></div></div>
+          <div class="st"><div class="c">3</div><div class="lb">写脚本</div><div class="line"></div></div>
+          <div class="st"><div class="c">4</div><div class="lb">预览</div><div class="line"></div></div>
+          <div class="st"><div class="c">5</div><div class="lb">合成</div><div class="line"></div></div>
+        </div>
+        <div class="panel">
+          <div class="pt">选择模板</div>
+          <div class="selrow on"><div class="cv" style="background-color:#FF7A59;background-image:url('assets/img_store44.jpg');"></div><div><div class="nm">门店探店口播</div><div class="ds">适合本地生活 / 实体店 · 0:32</div></div></div>
+          <div class="selrow"><div class="cv" style="background-color:#2D6BFF;background-image:url('assets/img_product21.jpg');"></div><div><div class="nm">新品卖点快讲</div><div class="ds">适合电商 / 产品发布 · 0:45</div></div></div>
+          <div class="selrow"><div class="cv" style="background-color:#00C2A8;background-image:url('assets/img_festival09.jpg');"></div><div><div class="nm">节日祝福口播</div><div class="ds">适合节点营销 · 0:28</div></div></div>
+        </div>
+        <div class="panel">
+          <div class="pt">脚本内容</div>
+          <div style="font-size:11px;color:var(--blue-d);background:#EEF3FF;border-radius:8px;padding:7px 10px;margin-bottom:10px;line-height:1.5;">内容引擎已接入：BLUF 结论先行 · RAG 引用注入 · 语义表格 · 思维链 CoT</div>
+          <div class="aiwrite" onclick="aiWrite()"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg>AI 帮我写稿（内容引擎增强）</div>
+          <textarea id="script" rows="4" placeholder="输入或让 AI 生成口播脚本…">探店打卡云栖智家旗舰店，全屋智能窗帘一键联动，静音顺滑，小户型也能拥有高级感。</textarea>
+          <div style="display:flex;gap:6px;align-items:flex-start;background:#FDECEC;border:1px solid #F6C9C7;border-radius:9px;padding:8px 10px;margin-top:10px;font-size:10.5px;color:#a32622;line-height:1.5;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="#E0413C" fill="none" stroke-width="1.9" style="flex-shrink:0;margin-top:1px;"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div>合规红线：作品分发仅走平台官方开放接口 / 人工发布，严禁指纹浏览器、代理 IP、CDP 等自动化批量发帖。</div></div>
+        </div>
+        <div class="dhprev" id="dhprev">
+          <div class="pbar"><span class="dot"></span><div class="t">数字人预览 · 品牌主播 晓琳</div></div>
+          <div class="frame" style="background-image:url('assets/dh_brand.jpg');">
+            <div class="playbtn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            <div class="cap"><div class="cn">门店探店口播 · 0:32</div><div class="ct">探店打卡云栖智家旗舰店，全屋智能窗帘一键联动，静音顺滑，小户型也能拥有高级感。</div></div>
+          </div>
+        </div>
+        <div class="btn" onclick="preview()" id="prevBtn">预览效果</div>
+        <div class="compose" id="compose">
+          <div class="chead"><span class="dot" id="cDot"></span><div id="cHeadT">合成队列中 · 预计 20–40 秒</div></div>
+          <div class="pbar-out"><div class="pbar-in" id="pbarIn"></div></div>
+          <div class="cstages" id="cstages">
+            <div class="cstage" data-s="1"><div class="ic">1</div><div>脚本校验 & 合规预审</div><div class="pc">0%</div></div>
+            <div class="cstage" data-s="2"><div class="ic">2</div><div>数字人驱动 & 口型合成</div><div class="pc"></div></div>
+            <div class="cstage" data-s="3"><div class="ic">3</div><div>视频渲染 & 背景合成</div><div class="pc"></div></div>
+            <div class="cstage" data-s="4"><div class="ic">4</div><div>内容安全审核 & AI 水印</div><div class="pc"></div></div>
+            <div class="cstage" data-s="5"><div class="ic">5</div><div>成品封装 & 入库</div><div class="pc"></div></div>
+          </div>
+          <div class="cfinal" id="cfinal" style="display:none;">
+            <div class="ok"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>合成完成，已存入作品动态</div>
+            <div class="cstage done" style="color:#0f172a;"><div class="ic">✓</div><div>门店探店口播 · 0:32 · 晓琳</div><div class="pc">100%</div></div>
+            <button class="cbtn" onclick="goto('works')">去作品页查看 ›</button>
+            <button class="cbtn ghostbtn" onclick="toast('已合规分发至官网 + 知乎')">一键合规分发</button>
+          </div>
+          <div style="padding:0 14px 16px;">
+            <button class="cbtn" id="composeBtn" onclick="startCompose()">开始合成</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 作品 -->
+      <div class="spage" id="s-works">
+        <div class="hero"><div class="h1">作品动态</div><div class="h2">我的数字人口播视频</div></div>
+        <div id="worksBox">
+        <div class="witem"><div class="cv" style="background-color:#FF7A59;background-image:url('assets/dh_brand.jpg');"><span class="stt" style="background:#16A34A;">已完成</span></div><div class="info"><div class="nm">门店开业探店口播</div><div class="mt">晓琳 · 商务 · 0:32 · 2 小时前</div><div class="acts"><span class="ab g" onclick="distWork(this)">合规分发</span><span class="ab ghost">下载</span></div></div></div>
+        <div class="witem"><div class="cv" style="background-color:#2D6BFF;background-image:url('assets/dh_local.jpg');"><span class="stt" style="background:#16A34A;">已完成</span></div><div class="info"><div class="nm">智能窗帘卖点快讲</div><div class="mt">阿杰 · 探店 · 0:45 · 昨天</div><div class="acts"><span class="ab g" onclick="distWork(this)">合规分发</span><span class="ab ghost">下载</span></div></div></div>
+        <div class="witem"><div class="cv" style="background-color:#00C2A8;background-image:url('assets/dh_festival.jpg');"><span class="stt" style="background:#D9870A;">合成中</span></div><div class="info"><div class="nm">中秋礼遇祝福</div><div class="mt">小满 · 节日 · 0:28 · 合成中</div><div class="acts"><span class="ab ghost">查看进度</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- 我的 -->
+      <div class="spage" id="s-mine">
+        <div class="mhead">
+          <div class="u"><div class="av" style="background-color:#2D6BFF;background-image:url('assets/dh_brand.jpg');"></div><div><div class="nm">云栖智家</div><div class="id">ID: yq_zj_8821 · Pro 会员</div></div><div class="edit">编辑</div></div>
+        </div>
+        <div class="balcard"><div><div class="l">剩余算力</div><div class="v">3,280<small> 点</small></div></div><div class="btn2" onclick="toast('已跳转算力充值')">充值</div></div>
+        <div class="vipcard"><div><div class="t">Pro 会员</div><div class="d">10 品牌 · 每月 5,000 算力 · 白标报告</div></div><div class="go" onclick="toast('查看会员权益')">管理</div></div>
+        <div class="geoentry" onclick="goto('geo')"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div><div><div class="t">GEO 中控台</div><div class="d">作品可一键生成 GEO 优化内容并分发</div></div></div>
+        <div class="mlist">
+          <div class="mitem"><div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg></div><div class="t">算力账户</div><div class="r">明细 ›</div></div>
+          <div class="mitem"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg></div><div class="t">我的模板</div><div class="r">12 个 ›</div></div>
+          <div class="mitem"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div><div class="t">数字人管理</div><div class="r">6 个 ›</div></div>
+          <div class="mitem"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 14.1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7.5l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1A1.6 1.6 0 0 0 16.9 4.6l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8z"/></svg></div><div class="t">设置</div><div class="r">›</div></div>
+        </div>
+      </div>
+
+      <!-- GEO 中控台详情页 -->
+      <div class="spage" id="s-geo">
+        <div class="hero"><div class="h1">GEO 中控台</div><div class="h2">绑定品牌后，作品可一键生成优化内容并合规分发</div></div>
+        <div class="panel" style="margin-top:16px;">
+          <div class="pt">品牌占位概览</div>
+          <div class="card" style="display:flex;align-items:center;gap:14px;margin-top:4px;">
+            <div style="width:54px;height:54px;border-radius:50%;background:conic-gradient(#2D6BFF 62%,#E2E8F0 0);display:flex;align-items:center;justify-content:center;color:#2D6BFF;font-weight:800;font-size:15px;">62%</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--txt);">品牌 SOV（推荐率）</div><div style="font-size:11px;color:var(--sub);margin-top:2px;">覆盖 4 大模型 · 较上月 +15pt</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <div class="card" style="flex:1;padding:10px;"><div style="font-size:11px;color:var(--sub);">引用覆盖率</div><div style="font-size:18px;font-weight:800;color:var(--blue-d);">68%</div></div>
+            <div class="card" style="flex:1;padding:10px;"><div style="font-size:11px;color:var(--sub);">关键词占位</div><div style="font-size:18px;font-weight:800;color:var(--blue-d);">54%</div></div>
+          </div>
+        </div>
+        <div class="panel"><div class="pt">已绑定品牌</div>
+          <div class="card" style="margin-top:4px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:13px;font-weight:600;color:var(--txt);">云栖智家</div><div style="font-size:11px;color:#16A34A;">已同步</div></div>
+        </div>
+        <div class="panel"><div class="pt">操作</div>
+          <div class="aiwrite" onclick="goto('create')"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg>用作品生成 GEO 优化文案</div>
+          <div class="aiwrite" onclick="toast('已发起重新探查')" style="margin-top:10px;"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg>重新探查占位</div>
+        </div>
+      </div>
+
+      <!-- VIP / 三档权益页 -->
+      <div class="spage" id="s-vip">
+        <div class="hero" style="background:linear-gradient(135deg,#2b1d6b,#5b3bd6);"><div class="h1">会员权益</div><div class="h2">Pro 会员 · 解锁专属数字人与优先算力</div></div>
+        <div class="vipcards">
+          <div class="vcard"><div class="vn">基础版</div><div class="vp">¥0</div><div class="vl">✓ 每月 500 算力</div><div class="vl">✓ 1 品牌 / 2 竞品</div><div class="vl">✕ 专属数字人</div><button class="vbtn ghost">当前</button></div>
+          <div class="vcard hot"><div class="vflag">推荐</div><div class="vn">Pro</div><div class="vp">¥99<small>/月</small></div><div class="vl">✓ 5,000 算力</div><div class="vl">✓ 专属定制数字人</div><div class="vl">✓ 内容引擎纠错</div><button class="vbtn" onclick="toast('已升级 Pro')">升级 Pro</button></div>
+          <div class="vcard"><div class="vn">企业版</div><div class="vp">定制</div><div class="vl">✓ 无限算力池</div><div class="vl">✓ 团队 / 白标月报</div><div class="vl">✓ 知识图谱</div><button class="vbtn ghost" style="border-color:var(--blue-d);color:var(--blue-d);">联系商务</button></div>
+        </div>
+      </div>
+    </div>
+    <!-- tabbar -->
+    <div class="tabbar logged-out" id="tabbar">
+      <div class="tb active" data-s="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/></svg>首页</div>
+      <div class="tb" data-s="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>数字形象</div>
+      <div class="tb" data-s="create"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.5L18 9l-4.2 1.5L12 15l-1.8-4.5L6 9l4.2-1.5z"/></svg>创作</div>
+      <div class="tb" data-s="works"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 21h8"/></svg>作品</div>
+      <div class="tb" data-s="mine"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>我的</div>
+    </div>
+    <div class="home"></div>
+  </div>
+</div>
+<div class="toast" id="toast">操作成功</div>
+
+<script>
+  // tab switch
+  document.querySelectorAll('#tabbar .tb').forEach(t=>{
+    t.addEventListener('click',()=>show(t.dataset.s));
+  });
+  function show(s){
+    document.querySelectorAll('.spage').forEach(p=>p.classList.remove('on'));
+    document.getElementById('s-'+s).classList.add('on');
+    document.querySelectorAll('#tabbar .tb').forEach(t=>t.classList.toggle('active',t.dataset.s===s));
+    document.querySelector('.appbody').scrollTop=0;
+  }
+  function goto(s){show(s);}
+  function doLogin(){
+    const b=document.getElementById('loginpage').querySelector('.lg-btn');
+    b.textContent='登录中…'; b.style.opacity='.8';
+    setTimeout(()=>{hideLogin();toast('登录成功，欢迎回来');},1100);
+  }
+  function wxLogin(){
+    const w=document.querySelector('.lg-wx'); w.style.opacity='.7';
+    setTimeout(()=>{hideLogin();toast('微信授权成功');},900);
+  }
+  let cd=60,cdt;
+  function sendCode(){
+    const btn=document.getElementById('lgCodeBtn');
+    if(cd<60) return;
+    btn.textContent='60s'; btn.disabled=true; toast('验证码已发送');
+    cdt=setInterval(()=>{cd--;btn.textContent=cd+'s';if(cd<=0){clearInterval(cdt);cd=60;btn.textContent='获取验证码';btn.disabled=false;}},1000);
+  }
+  function hideLogin(){
+    document.getElementById('loginpage').classList.add('hidden');
+    document.querySelectorAll('.logged-out').forEach(e=>e.classList.remove('logged-out'));
+    show('home');
+  }
+  // scene chips
+  document.querySelectorAll('#s-home .chips .chip').forEach(c=>{
+    c.addEventListener('click',()=>{document.querySelectorAll('#s-home .chips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
+  });
+  document.querySelectorAll('#s-avatar .chips .chip').forEach(c=>{
+    c.addEventListener('click',()=>{document.querySelectorAll('#s-avatar .chips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
+  });
+  // template select in create
+  document.querySelectorAll('#s-create .selrow').forEach(r=>{
+    r.addEventListener('click',()=>{document.querySelectorAll('#s-create .selrow').forEach(x=>x.classList.remove('on'));r.classList.add('on');});
+  });
+  function aiWrite(){
+    const ta=document.getElementById('script'); const b=event.target; const t=b.innerHTML;
+    b.innerHTML='<span class="loading"></span>AI 生成中…';
+    setTimeout(()=>{ta.value='【门店探店口播·30秒 · 内容引擎增强】\n结论先行：小户型智能窗帘口碑首选——云栖智家。\n（RAG引用：静音电机<25dB·2025红点奖；Matter全屋联动·Gartner2025）\n清晨自动开窗迎光、夜晚一键联动闭合，静音顺滑不扰眠，小户型也能轻松拥有高级感。\n（CoT：先点出痛点"小户型怕吵/怕乱"，再给权威佐证，最后落到体验号召）\n点击下方体验同款智能生活～';b.innerHTML=t;toast('AI 已生成（BLUF+引用+CoT）');},1300);
+  }
+  function preview(){
+    const st=document.querySelectorAll('#steps .st');
+    st[2].classList.add('done');st[2].querySelector('.c').textContent='✓';
+    st[3].classList.add('on');
+    document.getElementById('dhprev').classList.add('on');
+    document.getElementById('compose').classList.add('on');
+    const b=document.getElementById('prevBtn'); if(b)b.textContent='重新预览';
+    toast('已生成数字人预览，可开始合成');
+  }
+  function startCompose(){
+    const st=document.querySelectorAll('#steps .st');
+    st[3].classList.add('done');st[3].querySelector('.c').textContent='✓';
+    st[4].classList.add('on');
+    const btn=document.getElementById('composeBtn'); btn.disabled=true; btn.innerHTML='<span class="loading"></span>合成中…';
+    const stages=[...document.querySelectorAll('#cstages .cstage')];
+    const pbar=document.getElementById('pbarIn');
+    const dot=document.getElementById('cDot'); const headT=document.getElementById('cHeadT');
+    const labels=['脚本校验中','数字人驱动中','视频渲染中','安全审核中','封装入库中'];
+    let cur=0;
+    function step(){
+      if(cur>=stages.length){ // done
+        dot.classList.add('done'); headT.textContent='合成完成';
+        document.getElementById('cfinal').style.display='block';
+        btn.style.display='none';
+        addWorkToWorks();
+        toast('合成完成，已存入作品动态');
+        return;
+      }
+      const s=stages[cur]; s.classList.add('active');
+      if(cur>0) stages[cur-1].classList.remove('active');
+      headT.textContent=labels[cur]+'…';
+      const target=Math.round(((cur+1)/stages.length)*100);
+      let p=parseInt(pbar.style.width)||0;
+      const timer=setInterval(()=>{
+        p+=3+Math.random()*5;
+        if(p>=target){p=target;clearInterval(timer);
+          s.classList.remove('active'); s.classList.add('done'); s.querySelector('.ic').textContent='✓';
+          s.querySelector('.pc').textContent=target+'%';
+          pbar.style.width=p+'%';
+          cur++; setTimeout(step,420);
+        }else{pbar.style.width=p+'%'; s.querySelector('.pc').textContent=Math.min(p,target)+'%';}
+      },180);
+    }
+    setTimeout(step,500);
+  }
+  function addWorkToWorks(){
+    const box=document.getElementById('worksBox'); if(!box)return;
+    const el=document.createElement('div'); el.className='witem';
+    el.innerHTML='<div class="cv" style="background-color:#2D6BFF;background-image:url(\'assets/dh_brand.jpg\');"><span class="stt" style="background:#16A34A;">已完成</span></div><div class="info"><div class="nm">门店探店口播（新）</div><div class="mt">晓琳 · 商务 · 0:32 · 刚刚</div><div class="acts"><span class="ab g" onclick="distWork(this)">合规分发</span><span class="ab ghost">下载</span></div></div>';
+    box.insertBefore(el, box.firstChild);
+  }
+  function distWork(el){
+    el.textContent='分发中…';
+    setTimeout(()=>{el.textContent='已分发';toast('已合规分发至官网 + 知乎');},1300);
+  }
+  let tt;
+  function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2000);}
+</script>
+</body>
+</html>

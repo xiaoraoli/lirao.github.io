@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · AICast 内容矩阵平台</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* 登录页专用布局（仅用契约 token 派生） */
+html,body{height:100%;}
+.login-wrap{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;gap:0;}
+.login-left{position:relative;display:flex;flex-direction:column;justify-content:center;padding:64px clamp(32px,6vw,88px);overflow:hidden;border-right:1px solid var(--border-soft);}
+.login-left::after{content:'';position:absolute;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.13),transparent 65%);top:-120px;right:-120px;pointer-events:none;}
+.login-left::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.07),transparent 65%);bottom:-140px;left:-80px;pointer-events:none;}
+.login-brand{display:flex;align-items:center;gap:14px;margin-bottom:40px;}
+.login-brand .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#ff7a6b,#22d3ee);display:grid;place-items:center;color:#071120;box-shadow:0 8px 24px rgba(255,122,107,.35);}
+.login-brand .name{font-family:var(--font-display);font-weight:700;font-size:22px;}
+.login-brand .name small{display:block;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);letter-spacing:.14em;font-weight:400;}
+.login-left h2{font-size:clamp(28px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;line-height:1.2;max-width:460px;}
+.login-left h2 em{font-style:normal;color:var(--hot);}
+.login-left .lg-sub{color:var(--text-sub);font-size:var(--t1);margin:16px 0 44px;max-width:440px;}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:520px;}
+.feat{display:flex;flex-direction:column;gap:9px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);}
+.feat .fi{width:34px;height:34px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;}
+.feat .fi svg{width:18px;height:18px;}
+.feat b{font-size:var(--t1);}
+.feat span{font-size:var(--t-1);color:var(--text-sub);line-height:1.5;}
+
+.login-right{display:flex;align-items:center;justify-content:center;padding:40px 24px;}
+.login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:34px 32px;box-shadow:var(--sh-lg);}
+.login-card h3{font-size:var(--t2);margin-bottom:4px;}
+.login-card .lc-sub{color:var(--text-sub);font-size:var(--t-1);margin-bottom:24px;}
+.seg{margin-bottom:24px;}
+.form-stack .row{border-bottom:1px solid var(--border-soft);padding:2px 0 14px;margin-bottom:16px;}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+.field label{font-size:var(--t-1);color:var(--text-sub);}
+.demo-tip{margin-top:16px;padding:11px 13px;border-radius:var(--r-md);background:var(--accent-soft);border:1px solid transparent;font-size:var(--t-1);color:var(--accent);line-height:1.5;}
+.login-foot{margin-top:18px;text-align:center;font-size:var(--t-1);color:var(--text-faint);}
+@media(max-width:880px){.login-wrap{grid-template-columns:1fr;}.login-left{display:none;}}
+</style>
+</head>
+<body data-page="login">
+
+<div class="login-wrap">
+  <section class="login-left rv d1">
+    <div class="login-brand">
+      <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div class="name">AICast<small>CONTENT MATRIX</small></div>
+    </div>
+    <h2>AI 生成 · 矩阵分发 ·<br><em>数据回流，越发越准</em></h2>
+    <p class="lg-sub">一个越用越准的内容矩阵引擎。多平台错峰发布、独立环境隔离、4D 归因反哺，10 分钟跑完一天的内容运营闭环。</p>
+    <div class="feat-grid">
+      <div class="feat rv d2"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><b>AI 批量产内容</b><span>脚本、混剪、配音字幕封面四件套</span></div>
+      <div class="feat rv d3"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></div><b>独立环境隔离</b><span>每账号独享 IP 与设备指纹</span></div>
+      <div class="feat rv d4"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><b>分时错峰发布</b><span>规避平台互禁，健康度护航</span></div>
+    </div>
+  </section>
+
+  <section class="login-right rv d2">
+    <div class="login-card">
+      <h3>登录工作台</h3>
+      <p class="lc-sub">进入你的内容矩阵</p>
+      <div class="seg">
+        <button type="button" class="on" id="seg-pwd">账号登录</button>
+        <button type="button" id="seg-qr">扫码登录</button>
+      </div>
+
+      <form id="login-pwd" autocomplete="off">
+        <div class="field">
+          <label for="u">账号</label>
+          <input class="input" id="u" placeholder="请输入账号" value="1234" autofocus>
+          <span class="form-hint" id="u-hint"></span>
+        </div>
+        <div class="field">
+          <label for="p">密码</label>
+          <input class="input" type="password" id="p" placeholder="请输入密码" value="1234">
+          <span class="form-hint" id="p-hint"></span>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" id="login-btn" type="button">登 录</button>
+        <div class="demo-tip">演示环境 · 已填入 1234 / 1234，点击登录即可进入</div>
+      </form>
+
+      <div id="login-qr" style="display:none;text-align:center;padding:6px 0 4px;">
+        <div style="width:168px;height:168px;margin:6px auto 14px;border:1px solid var(--border);border-radius:12px;background:repeating-conic-gradient(#1a2944 0% 25%,#0d1526 0% 50%);background-size:16px 16px;"></div>
+        <p class="muted small">请使用本地客户端「设备码」扫码绑定账号</p>
+      </div>
+
+      <p class="login-foot">需要帮助？联系管理员 或查看 <a href="#">接入文档</a></p>
+    </div>
+  </section>
+</div>
+
+<script src="mock.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script>
+// 登录页交互（无 App Shell）
+(function () {
+  var btn = document.getElementById('login-btn');
+  var u = document.getElementById('u'), p = document.getElementById('p');
+  var uh = document.getElementById('u-hint'), ph = document.getElementById('p-hint');
+  var form = document.getElementById('login-pwd'), qr = document.getElementById('login-qr');
+  var segP = document.getElementById('seg-pwd'), segQ = document.getElementById('seg-qr');
+  var cur = 'pwd';
+  function setMode(m) {
+    cur = m;
+    form.style.display = m === 'pwd' ? '' : 'none';
+    qr.style.display = m === 'qr' ? '' : 'none';
+    segP.classList.toggle('on', m === 'pwd');
+    segQ.classList.toggle('on', m === 'qr');
+  }
+  segP.onclick = function(){ setMode('pwd'); };
+  segQ.onclick = function(){ setMode('qr'); };
+
+  btn.addEventListener('click', function () {
+    // 前端 mock 校验：演示账号 1234
+    var bad = false;
+    uh.textContent = u.value.trim() ? '' : '请输入账号'; if (!u.value.trim()) bad = true, u.classList.add('err'); else u.classList.remove('err');
+    ph.textContent = p.value ? '' : '请输入密码';       if (!p.value) bad = true, p.classList.add('err'); else p.classList.remove('err');
+    if (bad) return;
+    btn.classList.add('is-loading');
+    window.api.login(u.value.trim(), p.value).then(function (res) {
+      btn.classList.remove('is-loading');
+      if (res.ok) { window.UI.toast('登录成功，进入工作台', 'ok'); setTimeout(function(){ location.href='index.html'; }, 450); }
+      else { uc(); p.classList.add('err'); ph.textContent = res.msg; }
+    });
+    function uc(){ p.classList.remove('err'); }
+  });
+  u.addEventListener('input', function(){ u.classList.remove('err'); uh.textContent=''; });
+  p.addEventListener('input', function(){ p.classList.remove('err'); ph.textContent=''; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Creative Factory · 原型作品集</title>
+<style>
+  :root {
+    --bg: #070b16;
+    --bg-2: #0b1124;
+    --card: rgba(20, 27, 48, 0.72);
+    --card-solid: #121a30;
+    --ink: #eaf0ff;
+    --ink-soft: #9aa6c4;
+    --line: rgba(120, 140, 200, 0.18);
+    --accent: #22d3ee;
+    --accent-2: #7c5cff;
+    --accent-3: #ff7a59;
+    --glow: 0 0 0 1px rgba(124,92,255,0.0), 0 18px 50px rgba(8,12,28,0.6);
+    --shadow-h: 0 22px 60px rgba(34,211,238,0.18), 0 0 0 1px rgba(34,211,238,0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ===== 科技背景 ===== */
+  .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; background:
+      radial-gradient(1100px 700px at 12% -10%, rgba(34,211,238,0.16), transparent 60%),
+      radial-gradient(1000px 700px at 95% 0%, rgba(124,92,255,0.18), transparent 58%),
+      radial-gradient(900px 600px at 50% 120%, rgba(255,122,89,0.10), transparent 60%),
+      var(--bg);
+  }
+  .bg-grid {
+    position: absolute; inset: -2px;
+    background-image:
+      linear-gradient(rgba(124,140,200,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,140,200,0.10) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 80%);
+    mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 80%);
+    animation: gridDrift 24s linear infinite;
+  }
+  .bg-glow { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; }
+  .bg-glow.g1 { width: 520px; height: 520px; background: #1f7bff; top: -170px; left: -130px; animation: float1 17s ease-in-out infinite; }
+  .bg-glow.g2 { width: 460px; height: 460px; background: #7c5cff; top: 10%; right: -140px; animation: float2 21s ease-in-out infinite; }
+  .bg-glow.g3 { width: 420px; height: 420px; background: #16c4d9; bottom: -160px; left: 30%; animation: float3 19s ease-in-out infinite; }
+  .bg-scan { position: absolute; left: 0; right: 0; height: 2px; top: 0;
+    background: linear-gradient(90deg, transparent, rgba(34,211,238,0.6), transparent);
+    animation: scan 7s linear infinite; opacity: .5; }
+  @keyframes gridDrift { from { background-position: 0 0, 0 0; } to { background-position: 46px 46px, 46px 46px; } }
+  @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,30px); } }
+  @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-36px,26px); } }
+  @keyframes float3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,-28px); } }
+  @keyframes scan { from { top: -4%; } to { top: 104%; } }
+
+  .wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  /* Hero */
+  .hero { margin-bottom: 44px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: .06em; color: var(--accent);
+    background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.30);
+    padding: 6px 14px; border-radius: 999px; font-weight: 600;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 10px 2px rgba(34,211,238,0.8); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .hero h1 {
+    font-size: clamp(30px, 5vw, 48px); line-height: 1.15; margin: 18px 0 12px;
+    letter-spacing: -.01em;
+  }
+  .hero h1 span {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2) 70%, var(--accent-3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p { color: var(--ink-soft); font-size: 17px; max-width: 760px; }
+  .hero .meta { margin-top: 16px; display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-soft); font-size: 13px; }
+  .hero .meta b { color: var(--ink); }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 26px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    overflow: hidden; box-shadow: var(--glow); display: flex; flex-direction: column;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+  }
+  .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-h); border-color: rgba(34,211,238,0.45); }
+
+  .preview { position: relative; aspect-ratio: 16 / 10; background: #0c1326; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .preview::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    box-shadow: inset 0 0 40px rgba(8,12,28,0.55); }
+  .preview iframe {
+    width: 100%; height: 100%; border: 0; transform: scale(0.42); transform-origin: top left;
+    width: 238%; height: 238%; /* scale up so scaled content fills the box */
+    pointer-events: none; filter: saturate(1.02);
+  }
+  .preview .tag {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    background: rgba(8,12,28,0.66); backdrop-filter: blur(6px);
+    padding: 5px 11px; border-radius: 999px; letter-spacing: .02em;
+    border: 1px solid rgba(34,211,238,0.30);
+  }
+  .preview .open {
+    position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center;
+    background: rgba(8,12,28,0.0); opacity: 0; transition: opacity .25s ease, background .25s ease;
+  }
+  .card:hover .preview .open { opacity: 1; background: rgba(8,12,28,0.40); }
+  .preview .open span {
+    color: #eaf0ff; font-weight: 600; font-size: 14px; padding: 10px 18px;
+    border: 1.5px solid rgba(34,211,238,0.7); border-radius: 999px;
+    box-shadow: 0 0 20px rgba(34,211,238,0.35);
+    transform: translateY(6px); transition: transform .25s ease;
+  }
+  .card:hover .preview .open span { transform: translateY(0); }
+
+  .body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; }
+  .body h2 { font-size: 20px; letter-spacing: -.01em; color: var(--ink); }
+  .body .sub { color: var(--ink-soft); font-size: 14px; margin-top: 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .tags span {
+    font-size: 12px; color: #b9c4e0; background: rgba(124,140,200,0.10);
+    border: 1px solid var(--line); padding: 4px 10px; border-radius: 8px;
+  }
+  .cta {
+    margin-top: auto; padding-top: 18px; display: inline-flex; align-items: center; justify-content: space-between;
+    color: var(--accent); font-weight: 600; font-size: 14px; text-decoration: none;
+  }
+  .cta .arrow { transition: transform .2s ease; }
+  .body a.cta:hover .arrow { transform: translateX(4px); }
+
+  footer { margin-top: 56px; text-align: center; color: var(--ink-soft); font-size: 13px; }
+  footer b { color: var(--ink); }
+
+  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-grid, .bg-glow, .bg-scan, .badge .dot { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-glow g1"></div>
+  <div class="bg-glow g2"></div>
+  <div class="bg-glow g3"></div>
+  <div class="bg-scan"></div>
+</div>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="badge"><span class="dot"></span>CREATIVE FACTORY · 原型作品集</div>
+    <h1>五个产品原型的统一入口<br><span>C 端、内容矩阵、AIGC 生产、GEO SaaS、行业数字化——五条方向，一次看全</span></h1>
+    <p>五个已落地的产品方向原型：银发款 C 端、AICast 内容矩阵、AIGC 包材生产、Geo_Ai 企业 GEO SaaS、伍星御瓶行业数字化。点击卡片悬停预览，进入对应项目。</p>
+    <div class="meta">
+      <div>📦 <b>5</b> 个项目原型</div>
+      <div>🧭 对应产品路径探索</div>
+      <div>🗓 更新于 2026-08</div>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1. 银发款 -->
+    <article class="card">
+      <div class="preview">
+        <span class="tag">C 端产品路径</span>
+        <iframe loading="lazy" src="%E6%96%B9%E6%A1%88A_%E9%93%B6%E5%8F%91%E6%AC%BE%E5%8E%9F%E5%9E%8B%E7%95%8C%E9%9D%A2_%E5%8F%8C%E7%AB%AF%E5%90%88%E5%B9%B6_%E7%9C%9F%E5%AE%9E%E6%84%9F%E7%B2%BE%E4%BF%AE.html" title="电子家人·银发款"></iframe>
+        <a class="open" href="%E6%96%B9%E6%A1%88A_%E9%93%B6%E5%8F%91%E6%AC%BE%E5%8E%9F%E5%9E%8B%E7%95%8C%E9%9D%A2_%E5%8F%8C%E7%AB%AF%E5%90%88%E5%B9%B6_%E7%9C%9F%E5%AE%9E%E6%84%9F%E7%B2%BE%E4%BF%AE.html" target="_blank"><span>进入项目 →</span></a>
+      </div>
+      <div class="body">
+        <h2>电子家人 · 银发款</h2>
+        <p class="sub">面向老年用户的双端（App + 小程序）UI 原型，真实感精修。</p>
+        <div class="tags"><span>适老化</span><span>双端原型</span><span>UI 精修</span></div>
+        <a class="cta" href="%E6%96%B9%E6%A1%88A_%E9%93%B6%E5%8F%91%E6%AC%BE%E5%8E%9F%E5%9E%8B%E7%95%8C%E9%9D%A2_%E5%8F%8C%E7%AB%AF%E5%90%88%E5%B9%B6_%E7%9C%9F%E5%AE%9E%E6%84%9F%E7%B2%BE%E4%BF%AE.html" target="_blank">查看原型 <span class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 2. AICast -->
+    <article class="card">
+      <div class="preview">
+        <span class="tag">内容矩阵</span>
+        <iframe loading="lazy" src="aicast-prototype/index.html" title="AICast 控制台"></iframe>
+        <a class="open" href="aicast-prototype/index.html" target="_blank"><span>进入项目 →</span></a>
+      </div>
+      <div class="body">
+        <h2>AICast 控制台</h2>
+        <p class="sub">AI 内容生成 + 账号矩阵 + 排期调度的多页面运营控制台。</p>
+        <div class="tags"><span>AI 生成</span><span>账号矩阵</span><span>排期调度</span></div>
+        <a class="cta" href="aicast-prototype/index.html" target="_blank">查看原型 <span class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 3. AIGC 包材平台 -->
+    <article class="card">
+      <div class="preview">
+        <span class="tag">AIGC 生产</span>
+        <iframe loading="lazy" src="aigc-prototype/index.html" title="AIGC 包材平台"></iframe>
+        <a class="open" href="aigc-prototype/index.html" target="_blank"><span>进入项目 →</span></a>
+      </div>
+      <div class="body">
+        <h2>AIGC 包材平台</h2>
+        <p class="sub">B 端包材工作台：AI 生成、在线编辑器、图库、订单与提案。</p>
+        <div class="tags"><span>包材设计</span><span>在线编辑器</span><span>订单管理</span></div>
+        <a class="cta" href="aigc-prototype/index.html" target="_blank">查看原型 <span class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 4. Geo_Ai -->
+    <article class="card">
+      <div class="preview">
+        <span class="tag">企业 GEO SaaS</span>
+        <iframe loading="lazy" src="Geo_Ai/原型_Web控制台.html" title="Geo_Ai GEO 中控台"></iframe>
+        <a class="open" href="Geo_Ai/原型_Web控制台.html" target="_blank"><span>进入项目 →</span></a>
+      </div>
+      <div class="body">
+        <h2>Geo_Ai · GEO 中控台</h2>
+        <p class="sub">企业级 GEO 占榜中控台，配套 Web 控制台与小程序原型。</p>
+        <div class="tags"><span>GEO 占榜</span><span>中控台</span><span>小程序</span></div>
+        <a class="cta" href="Geo_Ai/原型_Web控制台.html" target="_blank">查看原型 <span class="arrow">→</span></a>
+      </div>
+    </article>
+
+    <!-- 5. 伍星御瓶 -->
+    <article class="card">
+      <div class="preview">
+        <span class="tag">行业数字化</span>
+        <iframe loading="lazy" src="wuxing-yuping-dt/index.html" title="伍星御瓶 Mould Lifecycle OS"></iframe>
+        <a class="open" href="wuxing-yuping-dt/index.html" target="_blank"><span>进入项目 →</span></a>
+      </div>
+      <div class="body">
+        <h2>伍星御瓶 · Mould Lifecycle OS</h2>
+        <p class="sub">模具数智化协同中枢，以「数字大脑」驱动全生命周期管理。</p>
+        <div class="tags"><span>模具生命周期</span><span>数字大脑</span><span>协同中枢</span></div>
+        <a class="cta" href="wuxing-yuping-dt/index.html" target="_blank">查看原型 <span class="arrow">→</span></a>
+      </div>
+    </article>
+
+  </main>
+
+  <footer>
+    Creative Factory · 原型作品集 — 共 <b>5</b> 个项目，均为本地静态原型，可离线预览。
+  </footer>
+
+</div>
+</body>
+</html>
